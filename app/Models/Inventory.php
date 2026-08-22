@@ -1,0 +1,46 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Inventory extends Model
+{
+    use HasFactory;
+
+    // Adding 'category', 'unit', 'items_per_unit', and 'low_stock_threshold' to the fillable array
+    protected $fillable = ['name', 'price', 'expiration_date', 'quantity', 'low_stock_threshold', 'unit', 'items_per_unit', 'supplier', 'expiration_type', 'category'];
+
+    protected $casts = [
+        'expiration_date' => 'datetime',
+    ];
+
+    // Mutator for expiration date based on expiration type
+    public function setExpirationDateAttribute($value)
+    {
+        if ($this->expiration_type === 'Inexpirable') {
+            $this->attributes['expiration_date'] = null; // Set to null if Inexpirable
+        } else {
+            $this->attributes['expiration_date'] = $value;
+        }
+    }
+
+    /**
+     * Get the procedures that use this inventory item
+     */
+    public function procedureInventories()
+    {
+        return $this->hasMany(ProcedureInventory::class);
+    }
+
+    /**
+     * Get the procedures that use this inventory item (many-to-many)
+     */
+    public function procedures()
+    {
+        return $this->belongsToMany(ProcedurePrice::class, 'procedure_inventory')
+                    ->withPivot('quantity_used')
+                    ->withTimestamps();
+    }
+}

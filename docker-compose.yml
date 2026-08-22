@@ -1,0 +1,57 @@
+# Local development stack for the Just Dental Clinic application.
+# Provides PHP 8.2 (with mongodb/redis/gd/... extensions) + MySQL 8 + MongoDB + Redis.
+#   docker compose up -d --build
+#   docker compose exec app composer install
+#   docker compose exec app php artisan migrate --seed
+services:
+  app:
+    build: ./docker/php
+    container_name: justdental_app
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+    ports:
+      - "8000:8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mongo:
+        condition: service_started
+      redis:
+        condition: service_started
+
+  mysql:
+    image: mysql:8.0
+    container_name: justdental_mysql
+    environment:
+      MYSQL_DATABASE: justdental
+      MYSQL_USER: justdental
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: rootsecret
+    ports:
+      - "3306:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-prootsecret"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  mongo:
+    image: mongo:7
+    container_name: justdental_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodata:/data/db
+
+  redis:
+    image: redis:7-alpine
+    container_name: justdental_redis
+    ports:
+      - "6379:6379"
+
+volumes:
+  dbdata:
+  mongodata:

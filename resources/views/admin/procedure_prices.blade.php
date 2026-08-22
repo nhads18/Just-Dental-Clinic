@@ -1,0 +1,1189 @@
+@extends('layouts.admin')
+
+@section('title', 'Procedure Prices')
+
+@section('content')
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<style>
+    .content-wrapper {
+        padding: 24px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        background-color: #fff;
+        padding: 20px 24px;
+        margin-bottom: 24px;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .page-title {
+        font-size: 24px;
+        font-weight: 600;
+        margin: 0;
+        color: #1a1a1a;
+    }
+
+    .alert-success {
+        background-color: #f0f9f4;
+        border: 1px solid #d1f2e0;
+        color: #16a34a;
+        padding: 12px 16px;
+        border-radius: 6px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .alert-success svg {
+        flex-shrink: 0;
+    }
+
+    .table-container {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+
+    .table-container h4 {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0 0 20px 0;
+        color: #1a1a1a;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .data-table thead th {
+        background-color: #f8f9fa;
+        color: #4a4a4a;
+        font-weight: 600;
+        padding: 12px 16px;
+        text-align: left;
+        border-bottom: 1px solid #e0e0e0;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    .data-table tbody td {
+        padding: 16px;
+        border-bottom: 1px solid #f0f0f0;
+        vertical-align: middle;
+    }
+
+    .data-table tbody tr:hover {
+        background-color: #fafafa;
+    }
+
+    .data-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .form-control {
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 14px;
+        transition: all 0.2s;
+        width: 100%;
+    }
+
+    .form-control:focus {
+        border-color: #0084ff;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(0,132,255,0.1);
+    }
+
+    textarea.form-control {
+        min-height: 100px;
+         min-width: 180px;
+        resize: vertical;
+    }
+
+    .input-group {
+        display: flex;
+        width: 100%;
+    }
+
+    .input-group-prepend,
+    .input-group-append {
+        display: flex;
+    }
+
+    .input-group-text {
+        background-color: #f8f9fa;
+        border: 1px solid #e0e0e0;
+        padding: 8px 12px;
+        font-size: 14px;
+        color: #4a4a4a;
+    }
+
+    .input-group-prepend .input-group-text {
+        border-right: none;
+        border-radius: 6px 0 0 6px;
+    }
+
+    .input-group-append .input-group-text {
+        border-left: none;
+        border-radius: 0 6px 6px 0;
+    }
+
+    .input-group .form-control {
+        border-radius: 0 6px 6px 0;
+    }
+
+    .input-group-prepend + .form-control {
+        border-left: none;
+    }
+
+    .input-group .form-control:not(:last-child) {
+        border-radius: 6px 0 0 6px;
+        border-right: none;
+    }
+
+    .image-preview-container {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        max-width: 80px;
+    }
+
+    .image-preview {
+        width: 100%;
+        height: 50px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        background-color: #fafafa;
+    }
+
+    .image-preview img {
+        max-width: 100%;
+        max-height: 50px;
+        object-fit: contain;
+    }
+
+    .no-image {
+        color: #9ca3af;
+        font-size: 12px;
+        font-style: italic;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-start;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-primary {
+        background-color: #0084ff;
+        color: #fff;
+    }
+
+    .btn-primary:hover {
+        background-color: #0070e0;
+    }
+
+    .btn-success {
+        background-color: #16a34a;
+        color: #fff;
+    }
+
+    .btn-success:hover {
+        background-color: #15803d;
+    }
+
+    .btn-danger {
+        background-color: #ef4444;
+        color: #fff;
+    }
+
+    .btn-danger:hover {
+        background-color: #dc2626;
+    }
+
+    .btn-secondary {
+        background-color: #6b7280;
+        color: #fff;
+    }
+
+    .btn-secondary:hover {
+        background-color: #4b5563;
+    }
+
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+
+    .section-divider {
+        height: 1px;
+        background-color: #e0e0e0;
+        margin: 32px 0;
+        border: none;
+    }
+
+    .add-form-card {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        padding: 24px;
+    }
+
+    .form-card-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .form-card-header h4 {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0;
+        color: #1a1a1a;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 500;
+        color: #4a4a4a;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .custom-file {
+        position: relative;
+        display: block;
+    }
+
+    .custom-file-input {
+        width: 100%;
+        height: 40px;
+        opacity: 0;
+        position: absolute;
+        cursor: pointer;
+    }
+
+    .custom-file-label {
+        display: block;
+        padding: 8px 12px;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        background-color: #fff;
+        cursor: pointer;
+        font-size: 14px;
+        color: #6b7280;
+    }
+
+    .custom-file-label::after {
+        content: 'Browse';
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        padding: 8px 16px;
+        background-color: #f8f9fa;
+        border-left: 1px solid #e0e0e0;
+        border-radius: 0 6px 6px 0;
+        color: #4a4a4a;
+        font-weight: 500;
+    }
+
+    .form-text {
+        font-size: 12px;
+        color: #9ca3af;
+        margin-top: 6px;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    .modal-content {
+        border-radius: 8px;
+        border: none;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    .modal-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid #e0e0e0;
+        background-color: #fff;
+    }
+
+    .modal-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1a1a1a;
+    }
+
+    .modal-body {
+        padding: 24px;
+        font-size: 14px;
+        color: #4a4a4a;
+    }
+
+    .modal-footer {
+        padding: 16px 24px;
+        border-top: 1px solid #e0e0e0;
+        background-color: #fafafa;
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+    }
+
+    .close {
+        background: none;
+        border: none;
+        font-size: 24px;
+        color: #9ca3af;
+        cursor: pointer;
+        padding: 0;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .close:hover {
+        color: #4a4a4a;
+    }
+
+    /* Floating Add Button */
+    .floating-add-btn {
+        position: fixed;
+        bottom: 32px;
+        right: 32px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: #16a34a;
+        color: #fff;
+        border: none;
+        box-shadow: 0 4px 12px rgba(22, 163, 74, 0.4);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        transition: all 0.3s;
+        z-index: 1000;
+    }
+
+    .floating-add-btn:hover {
+        background-color: #15803d;
+        transform: scale(1.1);
+        box-shadow: 0 6px 16px rgba(22, 163, 74, 0.5);
+    }
+
+    .floating-add-btn:active {
+        transform: scale(0.95);
+    }
+
+    @media (max-width: 768px) {
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .action-buttons .btn {
+            width: 100%;
+        }
+    }
+    
+    /* Search Card */
+    .search-card {
+        background-color: #fff;
+        padding: 16px;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 24px;
+    }
+    
+    .search-wrapper {
+        position: relative;
+    }
+    
+    .search-input {
+        width: 100%;
+        padding: 10px 12px 10px 40px;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+    
+    .search-input:focus {
+        outline: none;
+        border-color: #0084ff;
+        box-shadow: 0 0 0 3px rgba(0, 132, 255, 0.1);
+    }
+    
+    .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9ca3af;
+    }
+    
+    /* Statistics Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    
+    .stat-card {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .stat-content h6 {
+        font-size: 13px;
+        font-weight: 500;
+        color: #6b7280;
+        margin: 0 0 8px 0;
+    }
+    
+    .stat-content h3 {
+        font-size: 28px;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin: 0;
+    }
+    
+    .stat-icon {
+        font-size: 32px;
+        opacity: 0.2;
+    }
+</style>
+
+<div class="content-wrapper">
+    <div class="page-header">
+        <h2 class="page-title">
+            <i class="fas fa-dollar-sign"></i> Procedure Prices
+        </h2>
+    </div>
+
+    <!-- Display success message with fade-out effect -->
+    @if(session('success'))
+        <div class="alert alert-success" id="successMessage">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+            </svg>
+            <div>{{ session('success') }}</div>
+        </div>
+    @endif
+
+    <!-- Search Bar -->
+    <div class="search-card">
+        <div class="search-wrapper">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="search" class="search-input"
+                   placeholder="Search procedures..." onkeyup="searchProcedures()">
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-content">
+                <h6>Total Procedures</h6>
+                <h3>{{ count($allProcedures) }}</h3>
+            </div>
+            <i class="fas fa-procedures stat-icon" style="color: #0084ff;"></i>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <h6>Average Price</h6>
+                <h3>₱{{ number_format($allProcedures->avg('price'), 2) }}</h3>
+            </div>
+            <i class="fas fa-chart-line stat-icon" style="color: #16a34a;"></i>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <h6>Highest Price</h6>
+                <h3>₱{{ number_format($allProcedures->max('price'), 2) }}</h3>
+            </div>
+            <i class="fas fa-arrow-up stat-icon" style="color: #ef4444;"></i>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <h6>Lowest Price</h6>
+                <h3>₱{{ number_format($allProcedures->min('price'), 2) }}</h3>
+            </div>
+            <i class="fas fa-arrow-down stat-icon" style="color: #f59e0b;"></i>
+        </div>
+    </div>
+
+    <!-- Table to display procedure prices -->
+    <div class="table-container">
+        <h4>Current Procedures</h4>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Procedure Name</th>
+                        <th>Price</th>
+                        <th>Duration</th>
+                        <th>Image</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($procedures as $procedure)
+                    <tr>
+                        <td style="font-weight: 500;">{{ $procedure->procedure_name }}</td>
+                        <td>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">₱</span>
+                                </div>
+                                <input type="text" id="price_{{ $procedure->id }}" value="{{ old('price', $procedure->price) }}" class="form-control">
+                            </div>
+                        </td>
+                        <td>
+                            <div class="input-group">
+                                <input type="text" id="duration_{{ $procedure->id }}" value="{{ old('duration', $procedure->duration) }}" class="form-control">
+                                <div class="input-group-append">
+                                    <span class="input-group-text">min</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="image-preview-container">
+                                <div class="image-preview">
+                                    @if($procedure->image_path)
+                                        @php $filename = basename($procedure->image_path); @endphp
+                                        <img src="{{ url('procedure-image/' . $filename) }}" alt="Procedure Image" id="preview_{{ $procedure->id }}">
+                                    @else
+                                        <div class="no-image" id="preview_{{ $procedure->id }}">No Image</div>
+                                    @endif
+                                </div>
+                                <input type="file" id="image_path_{{ $procedure->id }}" class="form-control-file" accept="image/*" style="font-size: 10px; padding: 2px;" onchange="previewImage({{ $procedure->id }}, this)">
+                            </div>
+                        </td>
+                        <td>
+                            <textarea id="description_{{ $procedure->id }}" class="form-control" style="font-size: 10px;">{{ old('description', $procedure->description) }}</textarea>
+                        </td>
+                        <td>
+                            <!-- Action Buttons Container -->
+                            <div class="action-buttons">
+                                <!-- Manage Supplies Button -->
+                                <button class="btn btn-success btn-sm" onclick="openSuppliesModal({{ $procedure->id }}, '{{ $procedure->procedure_name }}')">
+                                    <i class="fas fa-boxes"></i> Supplies
+                                </button>
+
+                                <!-- Update Button -->
+                                <button class="btn btn-primary btn-sm" onclick="confirmUpdate({{ $procedure->id }})">
+                                    <i class="fas fa-save"></i> Update
+                                </button>
+
+                                <!-- Delete Button -->
+                                <button class="btn btn-danger btn-sm" onclick="confirmDelete({{ $procedure->id }})">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+
+                            <!-- Update Form -->
+                            <form id="updateForm_{{ $procedure->id }}" action="{{ route('admin.procedure_prices.update', ['id' => $procedure->id]) }}" method="POST" enctype="multipart/form-data" style="display: none;">
+                                @csrf
+                                @method('PUT')
+                                <input type="hidden" name="price" value="">
+                                <input type="hidden" name="duration" value="">
+                                <textarea name="description" style="display: none;"></textarea>
+                                <input type="file" name="image_path" style="display: none;">
+                            </form>
+
+                            <!-- Delete Form -->
+                            <form id="deleteForm_{{ $procedure->id }}" action="{{ route('admin.procedure_prices.destroy', ['id' => $procedure->id]) }}" method="POST" style="display: none;">
+                                @csrf
+                                @method('DELETE')
+                            </form>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="mt-4 d-flex justify-content-center">
+            {{ $procedures->links('vendor.pagination.compact-bootstrap-5') }}
+        </div>
+    </div>
+</div>
+
+<!-- Floating Add Button -->
+<button type="button" class="floating-add-btn" onclick="$('#addProcedureModal').modal('show')">
+    <i class="fas fa-plus"></i>
+</button>
+
+<!-- Add New Procedure Modal -->
+<div class="modal fade" id="addProcedureModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus-circle" style="color: #16a34a; margin-right: 8px;"></i>
+                    Add New Procedure
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="addProcedureForm" action="{{ route('admin.procedure_prices.store') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="modal_procedure_name">Procedure Name</label>
+                                <input type="text" name="procedure_name" id="modal_procedure_name" class="form-control" placeholder="Enter procedure name" required>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="modal_price">Price (₱)</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">₱</span>
+                                    </div>
+                                    <input type="text" name="price" id="modal_price" class="form-control" placeholder="0.00" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="modal_duration">Duration (minutes)</label>
+                                <div class="input-group">
+                                    <input type="text" name="duration" id="modal_duration" class="form-control" placeholder="30" required>
+                                    <div class="input-group-append">
+                                        <span class="input-group-text">min</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="modal_image_path">Procedure Image</label>
+                                <div class="custom-file">
+                                    <input type="file" name="image_path" id="modal_image_path" class="custom-file-input">
+                                    <label class="custom-file-label" for="modal_image_path">Choose image...</label>
+                                </div>
+                                <small class="form-text">Recommended size: 600x400px</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="modal_description">Description</label>
+                                <textarea name="description" id="modal_description" class="form-control" rows="4" placeholder="Enter procedure description..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="document.getElementById('addProcedureForm').submit()">
+                    <i class="fas fa-plus-circle"></i> Add Procedure
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Bootstrap Modal -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Confirmation</h5>
+                <button type="button" class="close" onclick="$('#confirmationModal').modal('hide')" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="modalMessage">Are you sure?</div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="$('#confirmationModal').modal('hide')">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmAction">Yes, Proceed</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+    // Function to preview image before upload
+    function previewImage(procedureId, input) {
+        const preview = document.getElementById('preview_' + procedureId);
+        const file = input.files[0];
+        
+        if (file) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                // If preview is an img element, update src
+                if (preview.tagName === 'IMG') {
+                    preview.src = e.target.result;
+                } else {
+                    // If it's a div (no-image placeholder), replace it with an img
+                    preview.outerHTML = `<img src="${e.target.result}" alt="Procedure Image" id="preview_${procedureId}">`;
+                }
+            };
+            
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // Function to handle file input display
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle the custom file input for modal form
+        const modalFileInput = document.getElementById('modal_image_path');
+        if (modalFileInput) {
+            modalFileInput.addEventListener('change', function() {
+                const fileName = this.value.split('\\').pop() || this.value.split('/').pop();
+                const label = this.nextElementSibling;
+                if (label && label.classList.contains('custom-file-label')) {
+                    label.textContent = fileName || 'Choose image...';
+                }
+            });
+        }
+        
+        // Handle table row file inputs
+        document.querySelectorAll('input[type="file"][id^="image_path_"]').forEach(function(input) {
+            input.addEventListener('change', function() {
+                const fileName = this.value.split('\\').pop() || this.value.split('/').pop();
+                console.log('File selected:', fileName);
+            });
+        });
+    });
+
+    function confirmUpdate(id) {
+        document.getElementById('modalTitle').innerText = 'Update Confirmation';
+        document.getElementById('modalMessage').innerText = 'Are you sure you want to update this procedure price?';
+
+        document.getElementById('confirmAction').onclick = function() {
+            const form = document.getElementById('updateForm_' + id);
+            const priceInput = form.querySelector('input[type="hidden"][name="price"]');
+            const durationInput = form.querySelector('input[type="hidden"][name="duration"]');
+            const descriptionTextarea = form.querySelector('textarea[name="description"]');
+            const imageFileInput = form.querySelector('input[type="file"][name="image_path"]');
+            
+            priceInput.value = document.getElementById('price_' + id).value;
+            durationInput.value = document.getElementById('duration_' + id).value;
+            descriptionTextarea.value = document.getElementById('description_' + id).value;
+            
+            const imageInput = document.getElementById('image_path_' + id);
+            if (imageInput && imageInput.files && imageInput.files.length > 0) {
+                // Create a new DataTransfer to clone the files
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(imageInput.files[0]);
+                imageFileInput.files = dataTransfer.files;
+            }
+
+            form.submit();
+        };
+
+        $('#confirmationModal').modal('show');
+    }
+
+    function confirmDelete(id) {
+        document.getElementById('modalTitle').innerText = 'Delete Confirmation';
+        document.getElementById('modalMessage').innerText = 'Are you sure you want to delete this procedure price? This action cannot be undone.';
+
+        document.getElementById('confirmAction').onclick = function() {
+            document.getElementById('deleteForm_' + id).submit();
+        };
+
+        $('#confirmationModal').modal('show');
+    }
+
+    // Auto-hide success message with animation
+    setTimeout(() => {
+        let successMessage = document.getElementById('successMessage');
+        if (successMessage) {
+            successMessage.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            successMessage.style.opacity = '0';
+            successMessage.style.transform = 'translateY(-20px)';
+            setTimeout(() => {
+                if (successMessage) {
+                    successMessage.style.display = 'none';
+                }
+            }, 500);
+        }
+    }, 5000);
+    
+    // Search function
+    function searchProcedures() {
+        const searchInput = document.getElementById('search').value.toLowerCase().trim();
+        const rows = document.querySelectorAll('.data-table tbody tr');
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            if (text.includes(searchInput)) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        // Show message if no results found
+        const tbody = document.querySelector('.data-table tbody');
+        let noResultsRow = document.getElementById('no-results-row');
+        
+        if (visibleCount === 0 && searchInput !== '') {
+            if (!noResultsRow) {
+                noResultsRow = document.createElement('tr');
+                noResultsRow.id = 'no-results-row';
+                noResultsRow.innerHTML = '<td colspan="6" style="text-align: center; padding: 40px; color: #9ca3af;"><i class="fas fa-search"></i> No procedures found matching "' + searchInput + '"</td>';
+                tbody.appendChild(noResultsRow);
+            }
+        } else {
+            if (noResultsRow) {
+                noResultsRow.remove();
+            }
+        }
+    }
+
+    // Manage Supplies Modal Functions
+    function openSuppliesModal(procedureId, procedureName) {
+        $('#suppliesProcedureId').val(procedureId);
+        $('#suppliesModalLabel').text('Manage Supplies for: ' + procedureName);
+        
+        // Load existing supplies for this procedure
+        loadProcedureSupplies(procedureId);
+        
+        $('#suppliesModal').modal('show');
+    }
+
+    function loadProcedureSupplies(procedureId) {
+        fetch(`/admin/procedure-supplies/${procedureId}`)
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('suppliesTableBody');
+                tbody.innerHTML = '';
+                
+                if (data.supplies && data.supplies.length > 0) {
+                    data.supplies.forEach(supply => {
+                        addSupplyRow(supply);
+                    });
+                } else {
+                    addSupplyRow();
+                }
+            })
+            .catch(error => {
+                console.error('Error loading supplies:', error);
+                addSupplyRow();
+            });
+    }
+
+    // Store inventory items globally
+    const inventoryItems = @json($inventories ?? []);
+
+    function addSupplyRow(supply = null) {
+        const tbody = document.getElementById('suppliesTableBody');
+        const row = document.createElement('tr');
+        
+        // Get already selected inventory IDs from existing rows
+        const selectedInventoryIds = Array.from(tbody.querySelectorAll('.supply-select'))
+            .map(select => select.value)
+            .filter(id => id !== '');
+        
+        // Build options HTML - exclude already selected items
+        let optionsHtml = '<option value="">Select Item</option>';
+        inventoryItems.forEach(inventory => {
+            const selected = supply && supply.inventory_id == inventory.id ? 'selected' : '';
+            // Hide items that are already selected in other rows (unless this is the current row's item)
+            const isAlreadyTaken = selectedInventoryIds.includes(inventory.id.toString()) && 
+                                   (!supply || supply.inventory_id != inventory.id);
+            
+            if (!isAlreadyTaken) {
+                optionsHtml += `<option value="${inventory.id}" 
+                                    data-unit="${inventory.unit}" 
+                                    data-items-per-unit="${inventory.items_per_unit}"
+                                    data-original-per-unit="${inventory.original_items_per_unit || inventory.items_per_unit}"
+                                    data-current-box-pieces="${inventory.current_box_pieces || inventory.items_per_unit}"
+                                    data-quantity="${inventory.quantity}"
+                                    ${selected}>
+                                ${inventory.name} (${inventory.unit}) - Available: ${inventory.quantity} + ${inventory.current_box_pieces || inventory.items_per_unit} pieces
+                            </option>`;
+            }
+        });
+        
+        row.innerHTML = `
+            <td>
+                <select class="form-control form-control-sm supply-select" name="inventory_id[]" required style="width: 100%; min-width: 200px; font-size: 13px; height: 33px;">
+                    ${optionsHtml}
+                </select>
+            </td>
+            <td>
+                <input type="number" class="form-control form-control-sm quantity-input" 
+                       name="quantity_used[]" 
+                       placeholder="Pieces" 
+                       step="0.01" 
+                       min="0.01" 
+                       value="${supply ? supply.quantity_used : ''}" 
+                       required
+                       style="font-size: 13px;">
+                <small class="text-danger quantity-error" style="display: none;"></small>
+            </td>
+            <td>
+                <span class="unit-display" style="font-size: 13px;">Pieces</span>
+            </td>
+            <td style="text-align: center;">
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeSupplyRow(this)" style="padding: 4px 8px;">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        `;
+        
+        tbody.appendChild(row);
+        
+        // Add event listeners for validation
+        const select = row.querySelector('.supply-select');
+        const quantityInput = row.querySelector('.quantity-input');
+        const errorSpan = row.querySelector('.quantity-error');
+        const unitDisplay = row.querySelector('.unit-display');
+        
+        function validateQuantity() {
+            const option = select.options[select.selectedIndex];
+            if (!option.value) return true;
+            
+            // NEW VALIDATION LOGIC WITH current_box_pieces
+            const fullBoxes = parseFloat(option.dataset.quantity) || 0;
+            const openBoxPieces = parseFloat(option.dataset.currentBoxPieces) || 0;
+            const piecesPerBox = parseFloat(option.dataset.originalPerUnit) || 1;
+            const requestedPieces = parseFloat(quantityInput.value) || 0;
+            const unit = option.dataset.unit;
+            
+            // Calculate total available: (full boxes × pieces per box) + pieces in open box
+            const totalAvailable = (fullBoxes * piecesPerBox) + openBoxPieces;
+            
+            if (requestedPieces > totalAvailable) {
+                errorSpan.textContent = `Insufficient stock! Need ${requestedPieces} pieces, only ${totalAvailable} pieces available (${fullBoxes} ${unit} + ${openBoxPieces} pieces in open box)`;
+                errorSpan.style.display = 'block';
+                quantityInput.style.borderColor = 'red';
+                return false;
+            } else {
+                errorSpan.style.display = 'none';
+                quantityInput.style.borderColor = '';
+                return true;
+            }
+        }
+        
+        select.addEventListener('change', function() {
+            const option = this.options[this.selectedIndex];
+            if (option.value) {
+                unitDisplay.textContent = 'Pieces';
+            } else {
+                unitDisplay.textContent = 'Pieces';
+            }
+            validateQuantity();
+        });
+        
+        quantityInput.addEventListener('input', validateQuantity);
+    }
+
+    function removeSupplyRow(button) {
+        const tbody = document.getElementById('suppliesTableBody');
+        if (tbody.children.length > 1) {
+            button.closest('tr').remove();
+        } else {
+            alert('At least one supply row is required. Please select an item or close the modal.');
+        }
+    }
+
+    function saveSupplies() {
+        const form = document.getElementById('suppliesForm');
+        const formData = new FormData(form);
+        const procedureId = formData.get('procedure_id');
+        
+        // Validate that at least one item is selected
+        const inventoryIds = formData.getAll('inventory_id[]');
+        const validItems = inventoryIds.filter(id => id !== '');
+        
+        if (validItems.length === 0) {
+            alert('Please select at least one inventory item before saving.');
+            return;
+        }
+        
+        // Validate quantities before saving
+        let hasErrors = false;
+        let errorMessages = [];
+        document.querySelectorAll('.quantity-input').forEach(input => {
+            const row = input.closest('tr');
+            const select = row.querySelector('.supply-select');
+            const option = select.options[select.selectedIndex];
+            
+            if (option.value) {
+                const fullBoxes = parseFloat(option.dataset.quantity) || 0;
+                const openBoxPieces = parseFloat(option.dataset.currentBoxPieces) || 0;
+                const piecesPerBox = parseFloat(option.dataset.originalPerUnit) || 1;
+                const requestedPieces = parseFloat(input.value) || 0;
+                const totalAvailable = (fullBoxes * piecesPerBox) + openBoxPieces;
+                
+                if (requestedPieces > totalAvailable) {
+                    hasErrors = true;
+                    const itemName = option.textContent.split('(')[0].trim();
+                    errorMessages.push(`${itemName}: Need ${requestedPieces} pieces, only ${totalAvailable} available`);
+                }
+            }
+        });
+        
+        if (hasErrors) {
+            alert('⚠️ Cannot save! Quantity errors:\n\n' + errorMessages.join('\n'));
+            return;
+        }
+        
+        // Show loading state
+        const saveButton = event.target;
+        const originalText = saveButton.innerHTML;
+        saveButton.disabled = true;
+        saveButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+        
+        fetch(`/admin/procedure-supplies/${procedureId}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json',
+            },
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            saveButton.disabled = false;
+            saveButton.innerHTML = originalText;
+            
+            if (data.success) {
+                $('#suppliesModal').modal('hide');
+                alert('✓ Supplies updated successfully!\n\nThe inventory items have been linked to this procedure.');
+                // Clear the form
+                document.getElementById('suppliesTableBody').innerHTML = '';
+            } else {
+                alert('Error saving supplies: ' + (data.message || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            saveButton.disabled = false;
+            saveButton.innerHTML = originalText;
+            console.error('Error:', error);
+            alert('Error saving supplies. Please try again.\n\nDetails: ' + error.message);
+        });
+    }
+    
+    // Close supplies modal function
+    function closeSuppliesModal() {
+        $('#suppliesModal').modal('hide');
+        // Clear the form
+        document.getElementById('suppliesTableBody').innerHTML = '';
+        document.getElementById('suppliesProcedureId').value = '';
+    }
+    
+    // Reset modal when closed
+    $('#suppliesModal').on('hidden.bs.modal', function () {
+        document.getElementById('suppliesTableBody').innerHTML = '';
+        document.getElementById('suppliesProcedureId').value = '';
+    });
+</script>
+
+<!-- Supplies Management Modal -->
+<div class="modal fade" id="suppliesModal" tabindex="-1" role="dialog" aria-labelledby="suppliesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="suppliesModalLabel">Manage Supplies</h5>
+                <button type="button" class="close" onclick="closeSuppliesModal()" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="suppliesForm">
+                <div class="modal-body">
+                    <input type="hidden" id="suppliesProcedureId" name="procedure_id">
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> 
+                        <strong>Note:</strong> Enter quantities in pieces. If an item uses boxes/bottles, the system will calculate based on items per unit.
+                    </div>
+                    
+                    <table class="table table-bordered" style="table-layout: fixed; width: 100%;">
+                        <thead>
+                            <tr>
+                                <th width="45%" style="font-size: 13px;">Inventory Item</th>
+                                <th width="25%" style="font-size: 13px;">Quantity Used</th>
+                                <th width="15%" style="font-size: 13px;">Unit</th>
+                                <th width="15%" style="font-size: 13px;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="suppliesTableBody">
+                            <!-- Rows will be added dynamically -->
+                        </tbody>
+                    </table>
+                    
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="addSupplyRow()">
+                        <i class="fas fa-plus"></i> Add Another Item
+                    </button>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeSuppliesModal()">Close</button>
+                    <button type="button" class="btn btn-success" onclick="saveSupplies()">
+                        <i class="fas fa-save"></i> Save Supplies
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@endsection

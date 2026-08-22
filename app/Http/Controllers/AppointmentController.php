@@ -1,0 +1,594 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Appointment;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use App\Models\ProcedurePrice;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Mail;
+use Carbon\Carbon;
+use App\Traits\LogsActivity;
+use App\Mail\AppointmentBooked;
+
+class AppointmentController extends Controller
+{
+    use LogsActivity;
+
+    public function index(Request $request)
+    {
+        $user = Auth::user();
+        
+        // Check if user has any pending, accepted, or rescheduled appointments
+        $hasPendingAppointment = Appointment::where('user_id', $user->id)
+            ->whereIn('status', ['pending', 'accepted', 'rescheduled'])
+            ->exists();
+        
+        // Check for completed appointments that haven't been reviewed
+        $completedWithoutReview = Appointment::where('user_id', $user->id)
+            ->where('status', 'completed')
+            ->whereNull('reviewed_at')
+            ->first();
+        
+        // If there's a completed appointment without review, set session flag
+        if ($completedWithoutReview) {
+            session()->flash('show_review_modal', true);
+            session()->flash('review_appointment_id', $completedWithoutReview->id);
+        }
+        
+        $appointments = Appointment::all();
+        $procedurePrices = ProcedurePrice::all(); // Fetch procedure prices from the database
+        $selectedDate = $request->input('date', now()->toDateString());
+        
+        // Check if this is a reschedule request
+        $reschedulingAppointmentId = $request->input('reschedule');
+        $reschedulingAppointment = null;
+        
+        if ($reschedulingAppointmentId) {
+            $reschedulingAppointment = Appointment::find($reschedulingAppointmentId);
+            
+            // Verify ownership
+            if ($reschedulingAppointment && $reschedulingAppointment->user_id != $user->id) {
+                $reschedulingAppointment = null;
+            }
+        }
+    
+        $workingHours = [
+            '08:00', '08:15', '08:30', '08:45',
+            '09:00', '09:15', '09:30', '09:45', 
+            '10:00', '10:15', '10:30', '10:45',
+            '11:00', '11:15', '11:30', '11:45',
+            '12:00', '12:15', '12:30', '12:45',
+            '13:00', '13:15', '13:30', '13:45',
+            '14:00', '14:15', '14:30', '14:45',
+            '15:00', '15:15', '15:30', '15:45',
+            '16:00', '16:15', '16:30', '16:45',
+        ];
+    
+    // Remove booked times (including all slots within duration) - exclude completed appointments
+    $availableTimes = array_filter($workingHours, function ($time) use ($appointments, $selectedDate, $reschedulingAppointmentId) {
+        $currentTime = Carbon::parse("$selectedDate $time");
+        foreach ($appointments as $appointment) {
+            // Skip the appointment being rescheduled
+            if ($reschedulingAppointmentId && $appointment->id == $reschedulingAppointmentId) {
+                continue;
+            }
+            
+            // Skip completed, declined, or cancelled appointments
+            if (in_array($appointment->status, ['completed', 'declined', 'cancelled'])) {
+                continue;
+            }
+            $start = Carbon::parse($appointment->start);
+            $end = Carbon::parse($appointment->end);
+            if ($currentTime >= $start && $currentTime < $end) {
+                return false; // Remove this time slot
+            }
+        }
+        return true; // Keep this time slot
+    });        $availableTimes = array_values($availableTimes); // Reindex array
+    
+        // Retrieve the selected procedure (if any)
+        $selectedProcedure = $request->input('procedure');
+        
+        // If a procedure is selected, fetch its price
+        $procedurePrice = null;
+        if ($selectedProcedure) {
+            // Find the procedure price based on the selected procedure
+            $procedurePrice = ProcedurePrice::where('procedure_name', $selectedProcedure)->first();
+        }
+    
+        // Return JSON if it's an AJAX request
+        if ($request->ajax()) {
+            return response()->json(['availableTimes' => $availableTimes]);
+        }
+    
+        // Return the HTML view for normal page load
+        return view('appointments', compact('availableTimes', 'selectedDate', 'appointments', 'procedurePrices', 'procedurePrice', 'selectedProcedure', 'hasPendingAppointment', 'reschedulingAppointment'));
+    }
+    
+    
+    public function getProcedurePrice(Request $request)
+{
+    $procedureName = $request->input('procedure');
+
+    // Find the price for the selected procedure
+    $procedurePrice = ProcedurePrice::where('procedure_name', $procedureName)->first();
+
+    // Return the price in JSON format
+    if ($procedurePrice) {
+        return response()->json(['price' => $procedurePrice->price]);
+    }
+
+    return response()->json(['price' => null]); // In case no price is found
+}
+    
+
+public function store(Request $request)
+{
+    $user_id = Auth::id();
+    
+    // ✅ CHECK 1: Prevent booking if user already has a pending or accepted appointment in database
+    // User must wait for admin to accept/decline before booking another appointment
+    $pendingAppointment = Appointment::where('user_id', $user_id)
+        ->whereIn('status', ['pending', 'accepted'])
+        ->first();
+    
+    if ($pendingAppointment) {
+        Log::info('Blocked booking - user has pending appointment', [
+            'user_id' => $user_id,
+            'existing_appointment_id' => $pendingAppointment->id,
+            'status' => $pendingAppointment->status,
+            'procedure' => $pendingAppointment->procedure
+        ]);
+        
+        $statusText = $pendingAppointment->status === 'accepted' 
+            ? 'an accepted appointment' 
+            : 'a pending appointment waiting for approval';
+        
+        return response()->json([
+            'error' => "You already have {$statusText}. Please complete or cancel it before booking another appointment.",
+            'existing_appointment' => [
+                'id' => $pendingAppointment->id,
+                'procedure' => $pendingAppointment->procedure,
+                'start' => $pendingAppointment->start,
+                'status' => $pendingAppointment->status
+            ]
+        ], 422);
+    }
+    
+    Log::info('Appointment Request Data:', [
+        'all_data' => $request->except(['image_path'])
+    ]);
+    
+    try {
+        $validated = $request->validate([
+            'title' => 'required|string',
+            'procedure' => 'required|string',
+            'time' => 'required|string',
+            'start' => 'required|date',
+            'image_path' => 'required|image|mimes:jpeg,png,jpg,svg|max:2048',
+        ]);
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        Log::error('Appointment Validation Failed:', [
+            'errors' => $e->errors(),
+            'request_data' => $request->except(['image_path'])
+        ]);
+        
+        // Return more detailed error message
+        $errors = $e->errors();
+        $firstError = reset($errors)[0] ?? 'Validation failed';
+        $totalErrors = count($errors);
+        $errorMessage = $firstError;
+        if ($totalErrors > 1) {
+            $errorMessage .= " (and " . ($totalErrors - 1) . " more error" . ($totalErrors > 2 ? "s" : "") . ")";
+        }
+        
+        return response()->json([
+            'error' => $errorMessage,
+            'errors' => $errors
+        ], 422);
+    }
+
+    // Combine date and time fields to create proper datetime
+    $dateStr = $validated['start'];
+    $timeStr = $validated['time'];
+    $startTime = Carbon::parse("$dateStr $timeStr");
+    $today = Carbon::today();
+
+// ✅ Next-Day Booking System (T+1 to T+7)
+// CANNOT book today - can ONLY book from tomorrow onwards up to 7 days
+// Example: Today is Sunday Nov 16 → Can book Monday Nov 17 to Sunday Nov 23
+$tomorrow = $today->copy()->addDay()->startOfDay();
+$lastBookingDay = $today->copy()->addDays(7)->endOfDay();
+
+// Ensure booking is NOT today (must be tomorrow or later)
+if ($startTime->isSameDay($today)) {
+    return response()->json([
+        'error' => 'Cannot book appointments for today. Please select tomorrow (' . $tomorrow->format('M d, Y') . ') or later.'
+    ], 422);
+}
+
+// Ensure booking starts from tomorrow onwards
+if ($startTime < $tomorrow) {
+    return response()->json([
+        'error' => 'Appointments can only be booked from tomorrow onwards. Please select ' . $tomorrow->format('M d, Y') . ' or later.'
+    ], 422);
+}
+
+// Ensure booking is within 7 days from today
+if ($startTime > $lastBookingDay) {
+    return response()->json([
+        'error' => 'Appointments can only be booked up to 7 days in advance. Last available date: ' . $lastBookingDay->format('M d, Y') . '.'
+    ], 422);
+}
+
+ // ✅ Fetch procedure duration from `procedure_prices` table
+$procedure = ProcedurePrice::where('procedure_name', $validated['procedure'])->first();
+$duration = $procedure ? (int) $procedure->duration : 30; // Convert to integer
+
+// Calculate end time 
+$endTime = $startTime->copy()->addMinutes($duration);
+
+    // Use procedure base price for records/invoice, payment is settled physically at clinic
+    $totalPrice = $procedure ? (float) $procedure->price : 0;
+
+
+    // 🔥 FIX: Allow booking exactly at the end time & exclude completed appointments
+    $conflictingAppointments = Appointment::whereDate('start', $startTime->toDateString())
+        ->whereNotIn('status', ['completed', 'declined', 'cancelled']) // Only check active appointments
+        ->where(function ($query) use ($startTime, $endTime) {
+            $query->whereBetween('start', [$startTime, $endTime->copy()->subMinute()])
+                  ->orWhere(function ($query) use ($startTime, $endTime) {
+                      $query->where('start', '<', $startTime)
+                            ->where('end', '>', $startTime);
+                  });
+        })
+        ->exists();
+
+    if ($conflictingAppointments) {
+        return response()->json(['error' => 'Selected time slot is already booked!'], 422);
+    }
+
+    // Store image
+    $image_path = null;
+    if ($request->hasFile('image_path')) {
+        $image = $request->file('image_path');
+        $filename = time() . '_' . $image->getClientOriginalName();
+        $path = $image->storeAs('valid_ids', $filename, 'public');
+        $image_path = $path;
+    }
+
+    // Create appointment immediately. Payment is physical at clinic.
+    $appointment = Appointment::create([
+        'title' => $validated['title'],
+        'procedure' => $validated['procedure'],
+        'time' => $validated['time'],
+        'start' => $startTime->toDateTimeString(),
+        'end' => $endTime->toDateTimeString(),
+        'duration' => $duration,
+        'user_id' => $user_id,
+        'image_path' => $image_path,
+        'payment_method' => 'physical',
+        'total_price' => $totalPrice,
+        'down_payment' => 0,
+        'payment_status' => 'unpaid',
+        'payment_reference' => null,
+        'status' => 'pending',
+    ]);
+
+    $this->logAppointmentActivity('created', $appointment, [
+        'procedure' => $validated['procedure'],
+        'date' => $startTime->format('Y-m-d'),
+        'time' => $validated['time'],
+        'payment_method' => 'physical',
+        'total_price' => $totalPrice,
+        'description' => 'Appointment created. Payment will be collected physically at the clinic.',
+    ]);
+
+    try {
+        $appointment = $appointment->fresh('user');
+        if ($appointment && $appointment->user) {
+            Mail::to($appointment->user->email)->send(new AppointmentBooked($appointment));
+        }
+    } catch (\Exception $e) {
+        Log::warning('Failed to send booking email: ' . $e->getMessage(), [
+            'appointment_id' => $appointment->id,
+        ]);
+    }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Appointment booked successfully! Please pay at the clinic on your visit.',
+    ]);
+}
+
+    
+
+    public function update(Request $request, $id)
+    {
+        // Find the appointment by ID
+        $appointment = Appointment::findOrFail($id);
+
+        // Check if the authenticated user is the owner of the appointment
+        if ($appointment->user_id != Auth::id()) {
+            return response()->json(['message' => 'You can only edit your own appointments'], 403);
+        }
+
+        // Validate the updated data
+        $validatedData = $request->validate([
+            'title' => 'required|string|max:255',
+            'procedure' => 'required|string',
+            'start' => 'required|date',
+            'end' => 'required|date',
+            'time' => 'required|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048' // Validate image upload
+        ]);
+
+        // Handle image upload if it exists
+        if ($request->hasFile('image')) {
+            $image_path = $request->file('image')->store('images', 'public'); // Store image in 'public/images'
+            $validatedData['image_path'] = $image_path;
+        }
+
+        // Update the appointment
+        $appointment->update($validatedData);
+
+        // Log appointment update
+        $this->logAppointmentActivity('updated', $appointment, [
+            'updated_fields' => array_keys($validatedData),
+            'description' => 'Appointment details updated',
+        ]);
+
+        // Return the updated appointment details to the front-end for calendar update
+        return response()->json([
+            'id' => $appointment->id,
+            'title' => $appointment->title,
+            'start' => $appointment->start,
+            'end' => $appointment->end,
+            'procedure' => $appointment->procedure,
+            'user_id' => $appointment->user_id,
+            'image_path' => $appointment->image_path // Include the updated image path
+        ]);
+    }
+
+    public function destroy($id)
+    {
+        $appointment = Appointment::findOrFail($id);
+
+        // Ensure the authenticated user is the owner of the appointment
+        if ($appointment->user_id != Auth::id()) {
+            return response()->json(['message' => 'You can only delete your own appointments'], 403);
+        }
+
+        // Log appointment deletion before deleting
+        $this->logAppointmentActivity('deleted', $appointment, [
+            'description' => 'Appointment cancelled by user',
+        ]);
+
+        // Delete image if exists
+        if ($appointment->image_path) {
+            Storage::delete($appointment->image_path);
+        }
+
+        $appointment->delete();
+
+        return response()->json(['success' => 'Appointment deleted successfully.']);
+    }
+    
+    /**
+     * Update rescheduled appointment with new date and time
+     */
+    public function rescheduleUpdate(Request $request, $id)
+    {
+        $user_id = Auth::id();
+        
+        // Find the appointment
+        $appointment = Appointment::findOrFail($id);
+        
+        // Verify ownership
+        if ($appointment->user_id != $user_id) {
+            return response()->json([
+                'error' => 'You can only reschedule your own appointments.'
+            ], 403);
+        }
+        
+        // Validate the new date and time
+        $validated = $request->validate([
+            'start' => 'required|date',
+            'time' => 'required|string',
+        ]);
+        
+        // Combine date and time
+        $dateStr = $validated['start'];
+        $timeStr = $validated['time'];
+        $newStartTime = Carbon::parse("$dateStr $timeStr");
+        $today = Carbon::today();
+        
+        // Apply same validation as new bookings (T+1 to T+7)
+        $tomorrow = $today->copy()->addDay()->startOfDay();
+        $lastBookingDay = $today->copy()->addDays(7)->endOfDay();
+        
+        if ($newStartTime->isSameDay($today)) {
+            return response()->json([
+                'error' => 'Cannot reschedule for today. Please select tomorrow (' . $tomorrow->format('M d, Y') . ') or later.'
+            ], 422);
+        }
+        
+        if ($newStartTime < $tomorrow) {
+            return response()->json([
+                'error' => 'Appointment date must be from tomorrow onwards.'
+            ], 422);
+        }
+        
+        if ($newStartTime > $lastBookingDay) {
+            return response()->json([
+                'error' => 'You can only book appointments up to 7 days in advance. Please select a date within ' . $lastBookingDay->format('M d, Y') . '.'
+            ], 422);
+        }
+        
+        // Check if time slot is available (same procedure duration logic as original booking)
+        $procedureName = $appointment->procedure;
+        $procedure = \App\Models\ProcedurePrice::where('procedure_name', $procedureName)->first();
+        $procedureDuration = $procedure ? (int) $procedure->duration : 30;
+        $newEndTime = $newStartTime->copy()->addMinutes($procedureDuration);
+        
+        // Check for conflicts (exclude current appointment)
+        $conflict = Appointment::where('id', '!=', $id)
+            ->whereIn('status', ['pending', 'accepted'])
+            ->where(function ($query) use ($newStartTime, $newEndTime) {
+                $query->whereBetween('start', [$newStartTime, $newEndTime])
+                      ->orWhereBetween('end', [$newStartTime, $newEndTime])
+                      ->orWhere(function ($q) use ($newStartTime, $newEndTime) {
+                          $q->where('start', '<=', $newStartTime)
+                            ->where('end', '>=', $newEndTime);
+                      });
+            })
+            ->first();
+        
+        if ($conflict) {
+            return response()->json([
+                'error' => 'This time slot is already booked. Please select another time.'
+            ], 422);
+        }
+        
+        // Update appointment with new date/time and set status to pending
+        $appointment->update([
+            'start' => $newStartTime,
+            'end' => $newEndTime,
+            'time' => $timeStr,
+            'status' => 'pending', // Reset to pending for admin approval
+        ]);
+        
+        // Clear rescheduling session
+        session()->forget('rescheduling_appointment');
+        
+        // Log activity
+        $this->logAppointmentActivity('rescheduled', $appointment, [
+            'description' => 'Appointment rescheduled to new date/time',
+            'new_date' => $newStartTime->format('Y-m-d'),
+            'new_time' => $timeStr,
+        ]);
+        
+        return response()->json([
+            'success' => 'Appointment rescheduled successfully! It will be reviewed by our team.',
+            'appointment' => [
+                'id' => $appointment->id,
+                'start' => $appointment->start,
+                'end' => $appointment->end,
+                'time' => $appointment->time,
+                'status' => $appointment->status,
+            ]
+        ]);
+    }
+
+    
+    /**
+     * Clear pending booking session keys for the authenticated user
+     */
+    public function clearPendingSession(Request $request)
+    {
+        $user_id = Auth::id();
+        
+        // Find and clear all pending sessions for this user
+        $allSessions = session()->all();
+        $clearedCount = 0;
+        $clearedKeys = [];
+        
+        foreach ($allSessions as $key => $value) {
+            // Only clear keys that match the exact pattern and are valid appointment data
+            if (strpos($key, 'pending_appointment_' . $user_id . '_') === 0) {
+                // Validate it's actually appointment data
+                if (is_array($value) && isset($value['procedure'])) {
+                    session()->forget($key);
+                    $clearedCount++;
+                    $clearedKeys[] = $key;
+                    Log::info('Manually cleared pending session', [
+                        'session_key' => $key, 
+                        'user_id' => $user_id,
+                        'procedure' => $value['procedure'] ?? 'unknown'
+                    ]);
+                }
+            }
+        }
+        
+        // Force save session to database
+        session()->save();
+        
+        Log::info('Session clear summary', [
+            'user_id' => $user_id,
+            'cleared_count' => $clearedCount,
+            'cleared_keys' => $clearedKeys
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => $clearedCount > 0 
+                ? "Cleared $clearedCount pending booking session(s). You can now book a new appointment." 
+                : 'No pending sessions found.',
+            'cleared_count' => $clearedCount
+        ]);
+    }
+    
+    /**
+     * Download invoice for an appointment
+     */
+    public function downloadInvoice($id)
+    {
+        $appointment = Appointment::findOrFail($id);
+        
+        // Verify user owns this appointment
+        if ($appointment->user_id !== Auth::id() && Auth::user()->usertype !== 'admin') {
+            abort(403, 'Unauthorized access to invoice.');
+        }
+        
+        // Get procedure price
+        $procedurePrice = ProcedurePrice::where('procedure_name', $appointment->procedure)->first();
+        $amount = $appointment->total_price ?? ($procedurePrice ? $procedurePrice->price : 0);
+        
+        // Generate simple HTML invoice
+        $html = view('invoices.invoice-template', [
+            'appointment' => $appointment,
+            'amount' => $amount
+        ])->render();
+        
+        // Return HTML response (can be enhanced with PDF generation later)
+        return response($html)
+            ->header('Content-Type', 'text/html')
+            ->header('Content-Disposition', 'inline; filename="invoice-' . $appointment->id . '.html"');
+    }
+
+    /**
+     * Get invoice data for PDF generation (AJAX endpoint)
+     */
+    public function getInvoiceData($id)
+    {
+        $appointment = Appointment::with('user')->findOrFail($id);
+        
+        // Verify user owns this appointment
+        if ($appointment->user_id !== Auth::id() && Auth::user()->usertype !== 'admin') {
+            abort(403, 'Unauthorized access to invoice.');
+        }
+        
+        // Get procedure details
+        $procedurePrice = ProcedurePrice::where('procedure_name', $appointment->procedure)->first();
+        
+        return response()->json([
+            'id' => $appointment->id,
+            'patient_name' => $appointment->user->name,
+            'patient_email' => $appointment->user->email,
+            'procedure' => $appointment->procedure,
+            'appointment_date' => \Carbon\Carbon::parse($appointment->start)->format('F j, Y'),
+            'appointment_time' => \Carbon\Carbon::parse($appointment->start)->format('g:i A') . ' - ' . \Carbon\Carbon::parse($appointment->end)->format('g:i A'),
+            'duration' => $procedurePrice ? $procedurePrice->duration : 'N/A',
+            'price' => $appointment->total_price ?? ($procedurePrice ? $procedurePrice->price : 0),
+            'down_payment' => $appointment->down_payment ?? 0,
+            'payment_method' => $appointment->payment_method,
+            'payment_reference' => $appointment->payment_reference,
+            'payment_status' => $appointment->payment_status,
+            'status' => $appointment->status,
+            'created_at' => $appointment->created_at->format('M j, Y g:i A'),
+        ]);
+    }
+}

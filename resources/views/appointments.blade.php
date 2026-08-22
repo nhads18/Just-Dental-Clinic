@@ -1,0 +1,1573 @@
+<x-app-layout>
+    @section('title', 'Dashboard')
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            {{ __('Appointment') }}
+        </h2>
+    </x-slot>
+
+    <!-- Global Toast Notification Component -->
+    <x-toast-notification />
+
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900 dark:text-gray-100" style="background-color: rgb(25, 221, 221); font-size: 18px; font-family: 'Roboto', sans-serif;">
+                    <span class="text-black">{{ __("Let’s book yours, " . auth()->user()->name . "!") }}</span>
+                <style>
+                    body.dark .bg-white {
+                        background-color: #1f2937 !important; /* Dark mode background */
+                    }
+                    body.dark .text-gray-900 {
+                        color: #f9fafb !important; /* Dark mode text color */
+                    }
+                    body.dark .text-gray-700 {
+                        color: #d1d5db !important; /* Dark mode text color */
+                    }
+                    body.dark .border-gray-300 {
+                        border-color: #4b5563 !important; /* Dark mode border color */
+                    }
+                    body.dark .bg-blue-600 {
+                        background-color: #2563eb !important; /* Dark mode button color */
+                    }
+                    body.dark .hover\:bg-blue-700:hover {
+                        background-color: #1d4ed8 !important; /* Dark mode button hover color */
+                    }
+                    body.dark .bg-red-600 {
+                        background-color: #dc2626 !important; /* Dark mode button color */
+                    }
+                    body.dark .hover\:bg-red-700:hover {
+                        background-color: #b91c1c !important; /* Dark mode button hover color */
+                    }
+                    body.dark .border-gray-300 {
+                        border-color: #4b5563 !important; /* Dark mode border color */
+                    }
+                    .dark .border {
+                        border: 1px solid #4b5563 !important; /* Thin border for visibility */
+                    }
+                    body.dark .fc-daygrid-day-number {
+    color: #ffffff !important; /* White text color for day numbers in dark mode */
+}
+body.dark .fc-toolbar-title, /* Month and Year */
+body.dark .fc-daygrid-day-number, /* Day numbers */
+body.dark .fc-col-header-cell-cushion { /* Day names */
+    color: #ffffff !important; /* White text color */
+}
+   /* Centered form */
+   .center-form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+.appointment-card {
+            background: white;
+            padding: 13px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            max-width: 250px;
+            width: 80%;
+        }
+        label {
+            font-weight: 500;
+            font-size: 12px;
+            color: #555;
+        }
+        input[type="date"] {
+            width: 100%;
+            padding: 5px;
+            font-size: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            outline: none;
+        }
+        .apptbutton {
+            width: 100%;
+            margin-top: 10px;
+            padding: 7px;
+            font-size: 12px;
+            font-weight: 450;
+            background-color: rgb(25, 221, 221);
+            border: none;
+            color: rgb(37, 37, 37);
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+
+        .apptbutton:hover {
+            background-color: rgb(15, 173, 173);
+        }
+
+        /* Modernized Modal */
+        .modal-content {
+            border-radius: 12px;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-title {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Landscape Booking Modal */
+        .booking-modal-landscape {
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .booking-modal-landscape > form {
+            overflow-y: auto;
+            flex: 1;
+            padding-right: 10px;
+            margin-bottom: 20px;
+        }
+
+        .booking-modal-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+        
+        .booking-modal-buttons {
+            flex-shrink: 0;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 20px;
+            margin-top: 0;
+            background: white;
+        }
+
+        .booking-column {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-section-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #1a1a1a;
+            border-bottom: 3px solid #00b4d8;
+            padding-bottom: 10px;
+        }
+
+        .payment-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        .payment-breakdown {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+
+        .price-row.total {
+            border-top: 2px solid #e0e0e0;
+            padding-top: 12px;
+            font-weight: 700;
+            font-size: 18px;
+            color: #00b4d8;
+        }
+
+        .payment-methods {
+            margin-top: 20px;
+        }
+
+        .payment-method-option {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .payment-method-option:hover {
+            border-color: #00b4d8;
+            background: #f0f9ff;
+        }
+
+        .payment-method-option input[type="radio"] {
+            margin-right: 12px;
+            width: 20px;
+            height: 20px;
+        }
+
+        .payment-method-option input[type="radio"]:checked + .payment-label {
+            color: #00b4d8;
+            font-weight: 600;
+        }
+
+        @media (max-width: 1024px) {
+            .booking-modal-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .modal-body ul {
+            list-style: none;
+            padding: 0;
+            text-align: center;
+        }
+
+        .modal-body ul li {
+            font-size: 13px;
+            padding: 8px;
+            background: #f1f1f1;
+            margin-bottom: 5px;
+            border-radius: 5px;
+        }
+
+        .btn-close {
+            font-size: 14px;
+        }
+
+  /* Custom Modal Styles */
+.custom-modal {
+    display: flex;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.4s ease-in-out, visibility 0.4s ease-in-out;
+}
+
+/* Smooth pop-up effect */
+.custom-modal.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Modal Content */
+.modal-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+    max-width: 80%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    transform: translateY(-30px);
+    transition: transform 0.2s ease-in-out;
+}
+
+/* Animate modal content */
+.custom-modal.show .modal-content {
+    transform: translateY(0);
+}
+
+/* Modal Header */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Close Button */
+.close-modal {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #333;
+    transition: color 0.2s;
+}
+
+.close-modal:hover {
+    color: red;
+}
+
+/* Time slots in 4 columns */
+.time-row {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 10px;
+}
+
+.time-slot {
+    font-size: 12px;
+    padding: 8px;
+    background: #f0f0f0;
+    border-radius: 5px;
+    width: 60px;
+    text-align: center;
+
+    transition: background 0.2s;
+}
+
+.time-slot:hover {
+    background: #ddd;
+}
+                </style>
+
+
+<!-- Need help? Button with icon -->
+<div class="flex items-center mt-4 cursor-pointer hover:text-gray-600" onclick="openHelpModal()">
+    <!-- SVG for Question Mark inside a Circle -->
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 mr-2" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10" stroke="black" stroke-width="2" fill="none"></circle>
+        <text x="12" y="16" font-size="14" text-anchor="middle" font-family="Arial" fill="black" font-weight="100">?</text>
+    </svg>
+
+    <!-- "Need Help?" text with adjusted font size -->
+    <span class="font-medium text-base text-black hover:text-gray-600">Need help</span>
+</div>
+<br>
+
+<div class="center-form">
+    <div class="appointment-card">
+        <h2 style="font-size: 13px;">Check Available Time Slot/s</h2>
+        <form id="appointmentForm">
+            <label for="date">Select Date:</label>
+            <input type="date" id="dateInput" name="date" value="{{ $selectedDate }}" required>
+            <button type="submit" class="apptbutton">Check Availability</button>
+        </form>
+    </div>
+</div>
+
+<!-- Custom Modal (No Bootstrap) -->
+<div id="availableTimesModal" class="custom-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Available Time Slots</h5>
+            <button class="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <ul id="availableTimesList">
+                @if (!empty($availableTimes))
+                    @foreach ($availableTimes as $time)
+                        <li>{{ $time }}</li>
+                    @endforeach
+                @else
+                    <li>No available slots for this day.</li>
+                @endif
+            </ul>
+        </div>
+    </div>
+</div>
+
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.getElementById("appointmentForm").addEventListener("submit", function(event) {
+    event.preventDefault(); // Prevent default form submission
+
+    let selectedDate = document.getElementById("dateInput").value;
+    let formAction = "{{ route('appointments') }}"; // Laravel route for fetching appointments
+
+    fetch(formAction + "?date=" + selectedDate, { method: "GET", headers: { "X-Requested-With": "XMLHttpRequest" } })
+        .then(response => response.json()) // Expect JSON response
+        .then(data => {
+            let timesList = document.getElementById("availableTimesList");
+            timesList.innerHTML = ""; // Clear previous times
+
+            if (data.availableTimes.length > 0) {
+                let rowDiv;
+                data.availableTimes.forEach((time, index) => {
+                    if (index % 4 === 0) { // Create a new row every 4 items
+                        rowDiv = document.createElement("div");
+                        rowDiv.classList.add("time-row");
+                        timesList.appendChild(rowDiv);
+                    }
+
+                    let timeItem = document.createElement("div");
+                    timeItem.classList.add("time-slot");
+                    timeItem.innerText = time;
+                    rowDiv.appendChild(timeItem);
+                });
+            } else {
+                timesList.innerHTML = "<p>No available slots for this day.</p>";
+            }
+
+            // Show modal smoothly
+            let modal = document.getElementById("availableTimesModal");
+            modal.style.display = "flex";
+            setTimeout(() => { modal.classList.add("show"); }, 10);
+        })
+        .catch(error => console.error("Error fetching available times:", error));
+});
+
+// Close modal when clicking the close button
+document.querySelector(".close-modal").addEventListener("click", function() {
+    let modal = document.getElementById("availableTimesModal");
+    modal.classList.remove("show");
+    setTimeout(() => { modal.style.display = "none"; }, 300);
+});
+
+// Close modal when clicking outside content
+window.onclick = function(event) {
+    let modal = document.getElementById("availableTimesModal");
+    if (event.target === modal) {
+        modal.classList.remove("show");
+        setTimeout(() => { modal.style.display = "none"; }, 300);
+    }
+};
+
+</script>
+
+                    <!-- Modal for How to Book an Appointment -->
+                    <div id="helpModal" class="hidden fixed z-10 inset-0 overflow-y-auto bg-black bg-opacity-50">
+                        <div class="flex items-center justify-center min-h-screen">
+                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md mx-4 relative">
+                                <!-- Close button (X) in the upper right corner -->
+                                <button onclick="closeHelpModal()" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 focus:outline-none">
+                                    &times;
+                                </button>
+
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">• How to Book an Appointment</h3>
+                                <div class="mt-4 space-y-4 text-sm text-gray-700 dark:text-gray-300">
+                                    <div>
+                                        <strong class="font-bold">Select a Date:</strong> In the calendar, click on the date you'd like to book your appointment. This will open the appointment booking form.
+                                    </div>
+                                    <div>
+                                        <strong class="font-bold">Fill Out Appointment Details:</strong>
+                                        <ul class="list-disc ml-6 space-y-2">
+                                            <li><strong>Event Title:</strong> Enter a title for your appointment (e.g., "Teeth Whitening" or simply your name e.g., "User's Appointment").</li>
+                                            <li><strong>Dental Procedure:</strong> Choose the procedure from the dropdown menu (e.g., "Root Canal").</li>
+                                            <li><strong>Estimated Duration:</strong> This will automatically update based on your selected procedure (e.g., "60 minutes").</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <strong class="font-bold">Agree to Terms & Conditions:</strong>
+                                        <ul class="list-disc ml-6 space-y-2">
+                                            <li>Read through the terms listed.</li>
+                                            <li>Check the box to confirm that you agree to the terms.</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <strong class="font-bold">Submit the Appointment:</strong> After filling out the form, click Save Changes to confirm your appointment.
+                                    </div>
+                                    <br>
+                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">• Appointment</h3>
+                                    <div>
+                                        <strong class="font-bold">Manage Appointments:</strong>
+                                        <ul class="list-disc ml-6 space-y-2">
+                                            <li>Edit your booking by clicking on your event.</li>
+                                            <li>You can unlimited edit/update your appointment. But once it was approved, you can't edit/update your appointment (Deleting the appointment will face some penalties).</li>
+                                            <li>Cancel your appointment by clicking 'Delete Appointment' (only available for your own bookings).</li>
+
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <strong class="font-bold">Wait for Dentist's approval</strong>
+                                        <ul class="list-disc ml-6 space-y-2">
+                                            <li>Check your Notification bell (if Approved or Declined).</li>
+                                            <li>View your Invoices (Dental Appointment Details) on the Dashboard.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <!-- OK button to close the modal -->
+                                <div class="mt-6 flex justify-end">
+                                    <button onclick="closeHelpModal()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200" style="font-size: 14px;">OK</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    // Function to open the modal
+                    function openHelpModal() {
+                        const modal = document.getElementById('helpModal');
+                        modal.classList.remove('hidden');
+                    }
+
+                    // Function to close the modal
+                    function closeHelpModal() {
+                        const modal = document.getElementById('helpModal');
+                        modal.classList.add('hidden');
+                    }
+                </script>
+
+
+                <br>
+                
+                @if(isset($reschedulingAppointment) && $reschedulingAppointment)
+                <div class="mb-6 p-4 bg-blue-50 border-l-4 border-blue-400 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-lg">
+                    <div class="flex items-center">
+                        <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                        </svg>
+                        <div>
+                            <h4 class="font-semibold text-lg">🔄 Rescheduling Appointment</h4>
+                            <p class="text-sm mt-1"><strong>Current Appointment:</strong> {{ $reschedulingAppointment->procedure }} on {{ \Carbon\Carbon::parse($reschedulingAppointment->start)->format('F d, Y \a\t g:i A') }}</p>
+                            <p class="text-sm mt-1"><strong>Payment Mode:</strong> Physical payment at clinic.</p>
+                            <p class="text-sm mt-1">Please select a new date and time below. Your procedure information will remain the same.</p>
+                        </div>
+                    </div>
+                </div>
+                @elseif(isset($hasPendingAppointment) && $hasPendingAppointment)
+                @php
+                    $blockingAppointment = \App\Models\Appointment::where('user_id', Auth::id())
+                        ->whereIn('status', ['pending', 'accepted', 'rescheduled'])
+                        ->first();
+                @endphp
+                @if($blockingAppointment)
+                <div class="mb-6 p-4 {{ $blockingAppointment->status === 'rescheduled' ? 'bg-blue-50 border-blue-400' : ($blockingAppointment->status === 'accepted' ? 'bg-green-50 border-green-400' : 'bg-yellow-50 border-yellow-400') }} border-l-4 {{ $blockingAppointment->status === 'rescheduled' ? 'text-blue-800 dark:bg-blue-900 dark:text-blue-200' : ($blockingAppointment->status === 'accepted' ? 'text-green-800 dark:bg-green-900 dark:text-green-200' : 'text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200') }} rounded-lg">
+                    <div class="flex items-start">
+                        <svg class="w-6 h-6 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                        <div class="flex-1">
+                            @if($blockingAppointment->status === 'rescheduled')
+                                <h4 class="font-semibold text-lg">Appointment Pending Reschedule</h4>
+                                <p class="text-sm mt-1">You requested to reschedule your appointment for <strong>{{ $blockingAppointment->procedure }}</strong>. Please select a new date and time to complete the reschedule process.</p>
+                                <a href="{{ route('appointments', ['reschedule' => $blockingAppointment->id]) }}" 
+                                   class="mt-3 inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition shadow">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    Reschedule Now
+                                </a>
+                            @elseif($blockingAppointment->status === 'accepted')
+                                <h4 class="font-semibold text-lg">Upcoming Appointment</h4>
+                                <p class="text-sm mt-1">You have an upcoming appointment for <strong>{{ $blockingAppointment->procedure }}</strong> on <strong>{{ \Carbon\Carbon::parse($blockingAppointment->start)->format('M d, Y g:i A') }}</strong>. You cannot book a new appointment until this one is completed.</p>
+                                <a href="{{ route('appointment.cancel') }}" 
+                                   class="mt-3 inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition shadow">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    View or Manage Appointment
+                                </a>
+                            @else
+                                <h4 class="font-semibold text-lg">Pending Appointment Exists</h4>
+                                <p class="text-sm mt-1">You already have a pending appointment. Please wait for it to be accepted or declined by the admin before booking a new appointment. This prevents appointment conflicts and ensures fair scheduling for all patients.</p>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+                @endif
+                @endif
+                
+                <div id="calendar" style="max-width: 900px; margin: auto; {{ (isset($hasPendingAppointment) && $hasPendingAppointment && !isset($reschedulingAppointment)) ? 'opacity: 0.5; pointer-events: none;' : '' }}"></div>
+
+                <div id="booking-modal" class="hidden fixed z-10 inset-0 overflow-y-auto">
+                    <div class="flex items-center justify-center min-h-screen p-4">
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-8 w-full max-w-6xl border booking-modal-landscape">
+                            @if(isset($reschedulingAppointment) && $reschedulingAppointment)
+                            <div class="mb-4 p-3 bg-blue-50 border border-blue-200 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-md text-sm">
+                                <strong>🔄 Rescheduling Mode:</strong> Select a new date and time. Payment will be settled physically at the clinic.
+                            </div>
+                            @elseif(isset($hasPendingAppointment) && $hasPendingAppointment)
+                            <div class="mb-4 p-3 bg-red-50 border border-red-200 text-red-800 dark:bg-red-900 dark:text-red-200 rounded-md text-sm">
+                                <strong>⚠️ Booking Disabled:</strong> You have a pending appointment. Please wait for admin approval.
+                            </div>
+                            @endif
+                            
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+                                @if(isset($reschedulingAppointment) && $reschedulingAppointment)
+                                    Reschedule Your Appointment
+                                @else
+                                    Book Your Appointment
+                                @endif
+                            </h3>
+                            
+                            <form id="booking-form" method="POST" 
+                                  action="{{ isset($reschedulingAppointment) && $reschedulingAppointment ? route('appointments.reschedule.update', $reschedulingAppointment->id) : route('appointments.store') }}" 
+                                  enctype="multipart/form-data" 
+                                  {{ (isset($hasPendingAppointment) && $hasPendingAppointment && !isset($reschedulingAppointment)) ? 'onsubmit="return false;"' : '' }}>
+                                @csrf
+                                <input type="hidden" id="booking-id" name="id">
+                                <input type="hidden" id="booking-start" name="start">
+                                <input type="hidden" id="booking-end" name="end">
+                                @if(isset($reschedulingAppointment) && $reschedulingAppointment)
+                                <input type="hidden" name="reschedule_mode" value="1">
+                                <input type="hidden" name="appointment_id" value="{{ $reschedulingAppointment->id }}">
+                                @endif
+
+                                <div class="booking-modal-grid">
+                                    <!-- Left Column: Appointment Details -->
+                                    <div class="booking-column">
+                                        <h4 class="modal-section-title">Appointment Details</h4>
+                                        
+                                        <!-- Name -->
+                                        <div class="mb-4">
+                                            <label for="booking-title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Patient Name</label>
+                                            <input type="text" id="booking-title" name="title" required 
+                                                   class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2.5"
+                                                   value="{{ __( auth()->user()->name) }}" readonly style="background: #f5f5f5;">
+                                        </div>
+
+                                        <!-- Procedure Dropdown -->
+                                        <div class="mb-4">
+                                            <label for="operation-type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Dental Procedure</label>
+                                            @if(isset($reschedulingAppointment) && $reschedulingAppointment)
+                                            <input type="text" value="{{ $reschedulingAppointment->procedure }}" readonly 
+                                                   class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm px-4 py-2.5" 
+                                                   style="background: #f5f5f5;">
+                                            <input type="hidden" name="procedure" value="{{ $reschedulingAppointment->procedure }}">
+                                            <p class="text-xs text-gray-500 mt-1">Procedure cannot be changed when rescheduling</p>
+                                            @else
+                                            <select id="operation-type" name="procedure" required class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2.5">
+                                                <option value="">Select a Procedure</option>
+                                                @foreach ($procedurePrices as $procedurePrice)
+                                                    <option value="{{ $procedurePrice->procedure_name }}" data-price="{{ $procedurePrice->price }}" data-duration="{{ $procedurePrice->duration }}" {{ $procedurePrice->procedure_name == $selectedProcedure ? 'selected' : '' }}>
+                                                        {{ $procedurePrice->procedure_name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            @endif
+                                        </div>
+
+                                        <!-- Estimated Time Display -->
+                                        <div class="mb-4">
+                                            <label for="estimated-time" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Estimated Duration</label>
+                                            <input type="text" id="estimated-time" name="estimated-time" readonly
+                                                   class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm px-4 py-2.5" style="background: #f5f5f5;"
+                                                   placeholder="Select a procedure"
+                                                   value="{{ isset($procedurePrice) ? $procedurePrice->duration . ' minutes' : '' }}">
+                                        </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        $('#operation-type').change(function() {
+            var selectedProcedure = $(this).val(); // Get selected procedure
+
+            if (selectedProcedure) {
+                $.ajax({
+                    url: '{{ route('getProcedureDetails') }}',  // Your AJAX route to fetch price & duration
+                    type: 'GET',
+                    data: { procedure: selectedProcedure },
+                    success: function(response) {
+                        if (response) {
+                            // Update price field
+                            $('#procedure-price').val(response.price ? '₱' + parseFloat(response.price).toFixed(2) : 'Price not available');
+
+                            // Update estimated duration field
+                            $('#estimated-time').val(response.duration ? response.duration + ' minutes' : 'Duration not available');
+                        } else {
+                            $('#procedure-price').val('Price not available');
+                            $('#estimated-time').val('Duration not available');
+                        }
+                    },
+                    error: function() {
+                        $('#procedure-price').val('Error fetching price');
+                        $('#estimated-time').val('Error fetching duration');
+                    }
+                });
+            } else {
+                $('#procedure-price').val('Price');
+                $('#estimated-time').val('Select a procedure');
+            }
+        });
+    });
+</script>
+
+
+
+                                        <!-- Time Selection -->
+                                        <div class="mb-4">
+                                            <label for="appointment-time" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                Appointment Time
+                                            </label>
+                                            <select id="appointment-time" name="time" required
+                                                class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2.5">
+                                                <option value="" disabled selected>Select Time</option>
+        <option value="08:00">08:00 AM</option>
+        <option value="08:15">08:15 AM</option>
+        <option value="08:30">08:30 AM</option>
+        <option value="08:45">08:45 AM</option>
+
+        <option value="09:00">09:00 AM</option>
+        <option value="09:15">09:15 AM</option>
+        <option value="09:30">09:30 AM</option>
+        <option value="09:45">09:45 AM</option>
+
+        <option value="10:00">10:00 AM</option>
+        <option value="10:15">10:15 AM</option>
+        <option value="10:30">10:30 AM</option>
+        <option value="10:45">10:45 AM</option>
+
+        <option value="11:00">11:00 AM</option>
+        <option value="11:15">11:15 AM</option>
+        <option value="11:30">11:30 AM</option>
+        <option value="11:45">11:45 AM</option>
+
+        <option value="12:00">12:00 PM</option>
+        <option value="12:15">12:15 PM</option>
+        <option value="12:30">12:30 PM</option>
+        <option value="12:45">12:45 PM</option>
+
+        <option value="13:00">13:00 PM</option>
+        <option value="13:15">13:15 PM</option>
+        <option value="13:30">13:30 PM</option>
+        <option value="13:45">13:45 PM</option>
+
+        <option value="14:00">14:00 PM</option>
+        <option value="14:15">14:15 PM</option>
+        <option value="14:30">14:30 PM</option>
+        <option value="14:45">14:45 PM</option>
+
+        <option value="15:00">15:00 PM</option>
+        <option value="15:15">15:15 PM</option>
+        <option value="15:30">15:30 PM</option>
+        <option value="15:45">15:45 PM</option>
+
+        <option value="16:00">16:00 PM</option>
+        <option value="16:15">16:15 PM</option>
+        <option value="16:30">16:30 PM</option>
+                                                <option value="16:45">16:45 PM</option>
+                                            </select>
+                                        </div>
+
+                                        @if(!isset($reschedulingAppointment) || !$reschedulingAppointment)
+                                        <!-- Valid ID Upload -->
+                                        <div class="mb-4">
+                                            <label for="valid-id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Upload Valid ID</label>
+                                            <input type="file" id="valid-id" name="image_path" accept="image/*" 
+                                                   class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2.5" 
+                                                   onchange="previewImage(event)" required>
+
+                                            <!-- Small Preview of Image -->
+                                            <div id="image-preview-container" class="mt-3">
+                                                <img id="image-preview" src="#" alt="Image Preview" style="display:none; max-width: 120px; height: auto; border: 2px solid #00b4d8; border-radius: 8px; cursor: zoom-in;" onclick="zoomImage()">
+                                            </div>
+
+                                            <small class="text-gray-500 mt-2 block">Accepts image files (JPEG, PNG, JPG, SVG).</small>
+                                        </div>
+                                        @else
+                                        <!-- Reschedule Mode - No ID Upload Needed -->
+                                        <div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
+                                            <p class="text-sm text-green-800"><strong>✅ Valid ID:</strong> Already on file</p>
+                                        </div>
+                                        @endif
+
+                                        <!-- Terms and Agreement -->
+                                        <div class="mb-4 mt-6">
+                                            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
+                                                <div class="flex items-start">
+                                                    <div class="flex-shrink-0">
+                                                        <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                                        </svg>
+                                                    </div>
+                                                    <div class="ml-3">
+                                                        <p class="text-sm font-bold text-gray-800 mb-2">Terms and Conditions</p>
+                                                        <ul class="list-disc pl-5 text-xs text-gray-700 space-y-1">
+                                                            <li>Rescheduling and editing the appointment is not allowed once created.</li>
+                                                            <li><strong class="text-red-600">Cancellation Policy:</strong> Cancellations must be made at least <strong>2 days (48 hours) before</strong> your scheduled appointment.</li>
+                                                            <li><strong class="text-red-600">Same-Day Cancellations:</strong> Cancellations on the same day of the appointment are <strong>NOT allowed</strong>.</li>
+                                                            <li><strong class="text-red-600">Payment Policy:</strong> Payments are collected <strong>physically at the clinic</strong> on your appointment day.</li>
+                                                            <li>Deleting your appointment counts as a violation (max 3 violations per week).</li>
+                                                            <li>Only one appointment is allowed per day.</li>
+                                                            <li>If your appointment is not yet in the current appointment period, you may cancel or reschedule through the Cancellation page.</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="flex items-center mt-3">
+                                                <input type="checkbox" id="terms-checkbox" required class="mr-3 w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                                <label for="terms-checkbox" class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                    I agree to the Terms and Conditions
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Right Column: Payment Arrangement -->
+                                    <div class="booking-column">
+                                        <h4 class="modal-section-title">Payment Arrangement</h4>
+
+                                        <div class="payment-section">
+                                            <div class="payment-breakdown">
+                                                <h5 class="font-semibold text-gray-800 mb-3 text-base">Service Fee</h5>
+
+                                                <div class="price-row">
+                                                    <span class="text-gray-600">Estimated Total:</span>
+                                                    <span class="font-semibold" id="display-total-price">₱0.00</span>
+                                                </div>
+
+                                                <div class="price-row total">
+                                                    <span>Payment Mode:</span>
+                                                    <span>Physical at Clinic</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="mt-4 p-4 bg-blue-50 border-l-4 border-blue-400 rounded-r-lg">
+                                                <div class="flex items-start">
+                                                    <svg class="w-5 h-5 text-blue-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                                                    </svg>
+                                                    <div class="ml-3">
+                                                        <p class="text-sm text-blue-800">
+                                                            <strong>Payment Note:</strong> No online payment is required. Full payment will be collected physically at the clinic during your appointment.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            @if(isset($reschedulingAppointment) && $reschedulingAppointment)
+                                            <div class="mt-4 p-3 bg-green-50 border border-green-300 rounded-md">
+                                                <p class="text-sm text-gray-700">
+                                                    <strong>Reschedule Note:</strong> Your appointment will remain pending for admin confirmation after you pick the new schedule.
+                                                </p>
+                                            </div>
+                                            @endif
+
+                                            <div class="flex justify-end gap-3 mt-6">
+                                                <button id="close-modal" type="button" class="px-6 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                                                    Cancel
+                                                </button>
+
+                                                <button id="delete-appointment" type="button" class="px-6 py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 hidden">
+                                                    Delete Appointment
+                                                </button>
+
+                                                <button type="submit"
+                                                        id="submit-booking-btn"
+                                                        class="px-8 py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white {{ (isset($hasPendingAppointment) && $hasPendingAppointment && !isset($reschedulingAppointment)) ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700' }} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                                        {{ (isset($hasPendingAppointment) && $hasPendingAppointment && !isset($reschedulingAppointment)) ? 'disabled' : '' }}>
+                                                    <svg class="w-5 h-5 inline-block mr-2 -mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                                    </svg>
+                                                    <span id="submit-btn-text">
+                                                        @if(isset($hasPendingAppointment) && $hasPendingAppointment)
+                                                            Booking Disabled
+                                                        @elseif(isset($reschedulingAppointment) && $reschedulingAppointment)
+                                                            Confirm Reschedule
+                                                        @else
+                                                            Book Appointment
+                                                        @endif
+                                                    </span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Hidden fields for pricing -->
+                                <input type="hidden" id="total-price-hidden" name="total_price" value="0">
+
+
+                                <!-- Modal for Image Zoom -->
+                                <div id="image-zoom-modal" class="fixed inset-0 bg-gray-700 bg-opacity-50 flex justify-center items-center" style="display:none;">
+                                    <img id="zoomed-image" src="#" alt="Zoomed Image" style="max-width: 90%; max-height: 90%; cursor: zoom-out;">
+                                </div>
+
+                                <script>
+                                    function previewImage(event) {
+                                        var file = event.target.files[0];
+                                        var reader = new FileReader();
+                                        reader.onload = function(e) {
+                                            var preview = document.getElementById('image-preview');
+                                            preview.style.display = 'inline-block';
+                                            preview.src = e.target.result;
+                                        };
+                                        reader.readAsDataURL(file);
+                                    }
+
+                                    function zoomImage() {
+                                        var modal = document.getElementById('image-zoom-modal');
+                                        var zoomedImage = document.getElementById('zoomed-image');
+                                        var previewImage = document.getElementById('image-preview');
+
+                                        zoomedImage.src = previewImage.src;
+                                        modal.style.display = 'flex';
+
+                                        modal.onclick = function() {
+                                            modal.style.display = 'none';
+                                        };
+                                    }
+                                </script>
+                            </div>
+                        </form>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    // Procedure price calculation for booking/reschedule form
+                    const operationType = document.getElementById('operation-type');
+                    if (operationType) {
+                        operationType.addEventListener('change', function() {
+                            const selectedOption = this.options[this.selectedIndex];
+                            const price = parseFloat(selectedOption.dataset.price) || 0;
+                            const duration = selectedOption.dataset.duration || '';
+
+                            // Update display fields
+                            document.getElementById('display-total-price').textContent = '₱' + price.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+                            // Update hidden fields
+                            document.getElementById('total-price-hidden').value = price.toFixed(2);
+
+                            // Update duration
+                            document.getElementById('estimated-time').value = duration ? duration + ' minutes' : '';
+                        });
+                    }
+
+                    // Terms checkbox localStorage
+                    document.addEventListener('DOMContentLoaded', function () {
+                        const termsCheckbox = document.getElementById('terms-checkbox');
+                        const termsAccepted = localStorage.getItem('termsAccepted');
+
+                        if (termsAccepted === 'true') {
+                            termsCheckbox.checked = true;
+                        }
+
+                        termsCheckbox.addEventListener('change', function () {
+                            localStorage.setItem('termsAccepted', termsCheckbox.checked);
+                        });
+                    });
+                </script>
+
+
+                <!-- Rating Modal -->
+                <div id="rating-modal" class="hidden fixed z-20 inset-0 flex justify-center items-center bg-gray-900 bg-opacity-50">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg p-5 w-96 shadow-lg relative">
+                        <!-- Close Button -->
+                        <button id="close-rating-modal" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 focus:outline-none">
+                            &times;
+                        </button>
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Rate Your Experience</h3>
+                        <div class="flex justify-center mb-4">
+                            <!-- Star Rating -->
+                            <div id="star-rating" class="flex space-x-2">
+                                @for ($i = 1; $i <= 5; $i++)
+                                    <svg data-value="{{ $i }}" xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-gray-400 cursor-pointer hover:text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                                    </svg>
+                                @endfor
+                            </div>
+                        </div>
+                        <textarea id="rating-message" class="w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" rows="3" placeholder="Leave a message (optional)"></textarea>
+                        <button id="submit-rating" class="mt-4 w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">Submit</button>
+                    </div>
+                </div>
+
+                <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const ratingModal = document.getElementById('rating-modal');
+        const closeRatingModal = document.getElementById('close-rating-modal');
+        const stars = document.querySelectorAll('#star-rating svg');
+        let selectedRating = 0;
+        
+        // Auto-show review modal for completed appointments that haven't been reviewed
+        @if(session('show_review_modal'))
+            ratingModal.classList.remove('hidden');
+        @endif
+
+        // Hover effect for stars
+        stars.forEach(star => {
+            star.addEventListener('mouseover', function () {
+                const value = this.getAttribute('data-value');
+                stars.forEach(s => s.classList.toggle('text-yellow-400', s.getAttribute('data-value') <= value));
+            });
+
+            star.addEventListener('mouseout', function () {
+                stars.forEach(s => s.classList.toggle('text-yellow-400', s.getAttribute('data-value') <= selectedRating));
+            });
+
+            star.addEventListener('click', function () {
+                selectedRating = this.getAttribute('data-value');
+                stars.forEach(s => s.classList.toggle('text-yellow-400', s.getAttribute('data-value') <= selectedRating));
+            });
+        });
+
+        // Submit rating
+        document.getElementById('submit-rating').addEventListener('click', function () {
+            const message = document.getElementById('rating-message').value;
+
+            if (selectedRating === 0) {
+                showToast('Please select a rating before submitting.', 'warning');
+                return;
+            }
+            
+            const appointmentId = '{{ session("review_appointment_id") ?? "" }}';
+
+            fetch("{{ route('ratings.store') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    rating: selectedRating,
+                    message: message,
+                    appointment_id: appointmentId
+                })
+            })
+            .then(async response => {
+                const contentType = response.headers.get('content-type');
+                if (!response.ok) {
+                    console.error('Response status:', response.status);
+                    // Try to parse error message
+                    if (contentType && contentType.includes('application/json')) {
+                        const err = await response.json();
+                        throw new Error(err.message || 'Failed to submit rating.');
+                    } else {
+                        // Server returned HTML error page
+                        throw new Error(`Server error (${response.status}). Please check if you are logged in.`);
+                    }
+                }
+                // Ensure response is JSON
+                if (contentType && contentType.includes('application/json')) {
+                    return response.json();
+                } else {
+                    throw new Error('Server returned invalid response format.');
+                }
+            })
+            .then(data => {
+                console.log('Rating submitted:', data);
+                showToast('Thank you for your feedback!', 'success');
+                ratingModal.classList.add('hidden');
+                // Reset form
+                selectedRating = null;
+                document.querySelectorAll('.star').forEach(s => s.classList.remove('text-yellow-400'));
+                document.getElementById('rating-message').value = '';
+            })
+            .catch(error => {
+                console.error('Error submitting rating:', error);
+                showToast(error.message || 'An error occurred while submitting your rating. Please try again.', 'error');
+            });
+        });
+
+        // Prevent double submission
+        let isSubmitting = false;
+
+        // Show rating modal after successful booking
+        document.getElementById('booking-form').addEventListener('submit', function (event) {
+            event.preventDefault(); // Prevent default form submission
+
+            // Prevent double submission with explicit flag
+            if (isSubmitting) {
+                console.log('Form already submitting, please wait...');
+                showToast('Please wait, processing your booking...', 'info');
+                return;
+            }
+
+            const form = event.target;
+            const formData = new FormData(form);
+            const submitBtn = document.getElementById('submit-booking-btn');
+            const submitBtnText = document.getElementById('submit-btn-text');
+            
+            // Check if this is reschedule mode
+            const isRescheduleMode = formData.has('reschedule_mode');
+            
+            // Validate all required fields before submission
+            const requiredFields = isRescheduleMode ? {
+                'title': 'Patient Name',
+                'procedure': 'Procedure',
+                'time': 'Appointment Time'
+            } : {
+                'title': 'Patient Name',
+                'procedure': 'Procedure',
+                'time': 'Appointment Time',
+                'image_path': 'Valid ID'
+            };
+
+            let missingFields = [];
+            for (const [field, label] of Object.entries(requiredFields)) {
+                if (field === 'image_path') {
+                    const fileInput = document.getElementById('valid-id');
+                    if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+                        missingFields.push(label);
+                    }
+                } else {
+                    const input = document.querySelector(`[name="${field}"]`);
+                    if (!input || !input.value) {
+                        missingFields.push(label);
+                    }
+                }
+            }
+
+            if (missingFields.length > 0) {
+                showToast('Please fill in all required fields:\n' + missingFields.join(', '), 'error');
+                return;
+            }
+
+            // Ensure total price is present for non-reschedule flow
+            if (!isRescheduleMode) {
+                const totalPrice = document.getElementById('total-price-hidden');
+
+                if (!totalPrice || !totalPrice.value || totalPrice.value === '0') {
+                    showToast('Total price is missing. Please select a procedure.', 'error');
+                    return;
+                }
+
+                formData.set('total_price', totalPrice.value);
+
+                // Debug: Log what we're sending
+                console.log('Submitting appointment with:');
+                console.log('Total Price:', totalPrice.value);
+            } else {
+                console.log('Reschedule mode - skipping total price validation');
+            }
+
+            // Disable button and show loading state
+            isSubmitting = true;
+            submitBtn.disabled = true;
+            submitBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+            submitBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+            submitBtnText.innerHTML = '<svg class="animate-spin h-5 w-5 inline-block mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Processing...';
+
+            fetch(form.action, {
+                method: form.method,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json',
+                },
+                body: formData,
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => {
+                        throw err;
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Form submitted successfully:', data);
+                
+                if (data.error) {
+                    showToast(data.error, 'error');
+                    // Re-enable button on error
+                    resetSubmitButton();
+                } else if (isRescheduleMode) {
+                    // Reschedule success - no payment needed
+                    showToast(data.success || 'Appointment rescheduled successfully!', 'success');
+                    
+                    // Reload page after short delay
+                    setTimeout(() => {
+                        window.location.href = '/appointments';
+                    }, 2000);
+                } else {
+                    showToast(data.message || 'Appointment booked successfully!', 'success');
+                    
+                    // Show rating modal after 3 seconds
+                    setTimeout(() => {
+                        ratingModal.classList.remove('hidden');
+                    }, 3000);
+                    
+                    // Optionally reload page after rating modal
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 10000);
+                }
+            })
+            .catch(error => {
+                console.error('Error submitting form:', error);
+                
+                // Re-enable button on error
+                resetSubmitButton();
+                
+                // Display validation errors more clearly
+                let errorMessage = 'An error occurred while booking your appointment';
+                
+                if (error.error) {
+                    errorMessage = error.error;
+                } else if (error.errors) {
+                    // Show all validation errors
+                    const errorList = Object.values(error.errors).flat();
+                    errorMessage = 'Validation errors:\n' + errorList.join('\n');
+                    console.log('Validation errors:', error.errors);
+                } else if (error.message) {
+                    errorMessage = error.message;
+                }
+                
+                showToast(errorMessage, 'error');
+            });
+        });
+
+        // Function to reset submit button
+        function resetSubmitButton() {
+            isSubmitting = false;
+            const submitBtn = document.getElementById('submit-booking-btn');
+            const submitBtnText = document.getElementById('submit-btn-text');
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+            submitBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+            submitBtnText.textContent = 'Book Appointment';
+        }
+
+        // Close rating modal
+        closeRatingModal.addEventListener('click', function () {
+            ratingModal.classList.add('hidden');
+        });
+
+        
+
+    });
+</script>
+            </div>
+        </div>
+    </div>
+    @section('css')
+        <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/main.min.css" rel="stylesheet">
+        <style>
+
+            .fc-event {
+                transition: background-color 0.3s, transform 0.3s;
+                position: relative;
+                background-color: rgb(25, 221, 221);
+                font-size: 13px;
+            }
+            .fc-event:hover {
+                background-color: rgb(26, 184, 184);
+                transform: scale(1.05);
+            }
+            .fc-event-title {
+                display: none;
+            }
+            .fc-event-time::before {
+                content: "\2022"; /* Bullet character */
+                color: #1E90FF; /* Light blue color */
+                font-size: 10px; /* Larger bullet */
+                margin-right: 8px;
+            }
+            .fc-event-time {
+                display: inline-block;
+                margin-left: 12px;
+            }
+            .fc-event {
+                cursor: pointer;
+            }
+            .fc-event.other-appointment {
+                pointer-events: none;
+                background-color: #99b2cf;
+            }
+            .fc-event.other-appointment:hover {
+                background-color: #f0f0f0;
+            }
+
+            @media (max-width: 768px) { /* Tablets and small screens */
+    .event-time {
+        font-size: 14px !important;
+    }
+}
+
+@media (max-width: 480px) { /* Phones like Galaxy S8+ and smaller */
+    .event-time {
+        font-size: 12px !important;
+    }
+}
+
+@media (max-width: 360px) { /* Very small screens */
+    .event-time {
+        font-size: 11px !important;
+    }
+}
+
+        </style>
+    @endsection
+
+    @section('scripts')
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/main.min.js"></script>
+        <script>
+         document.addEventListener('DOMContentLoaded', function() {
+    // Define estimated times for each procedure
+    const procedureTimes = {
+
+    };
+
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        events: @json($appointments).filter(appointment => 
+            appointment.status !== 'declined' && 
+            appointment.status !== 'cancelled'
+        ).map(appointment => ({
+            ...appointment,
+            start: appointment.start,
+            end: appointment.end,
+            title: appointment.title
+        })),
+
+        eventTimeFormat: { // 24-hour format
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+            meridiem: false
+        },
+
+        dateClick: function(info) {
+    const selectedDate = new Date(info.dateStr + 'T00:00:00');
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    // T+1 to T+7 system: Can only book tomorrow through 7 days from today
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    
+    const lastBookingDay = new Date(today);
+    lastBookingDay.setDate(today.getDate() + 7);
+    
+    // Format dates for error message
+    const tomorrowStr = tomorrow.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+    const lastDayStr = lastBookingDay.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+    
+    // Check if selected date is today (not allowed)
+    if (selectedDate.getTime() === today.getTime()) {
+        showToast(`Cannot book for today. Please select ${tomorrowStr} or later.`, 'warning');
+        return;
+    }
+    
+    // Check if selected date is before tomorrow
+    if (selectedDate < tomorrow) {
+        showToast(`Please select ${tomorrowStr} or later.`, 'warning');
+        return;
+    }
+    
+    // Check if selected date is beyond 7 days
+    if (selectedDate > lastBookingDay) {
+        showToast(`Booking limit is ${lastDayStr}. Please select an earlier date.`, 'warning');
+        return;
+    }
+
+    $('#booking-start').val(info.dateStr);
+    $('#booking-end').val(info.dateStr);
+    $('#booking-modal').removeClass('hidden');
+    $('#booking-id').val('');
+    $('#delete-appointment').addClass('hidden');
+},
+
+
+        eventClick: function(info) {
+            const event = info.event;
+            const isLoggedInUserEvent = event.extendedProps.user_id === {{ auth()->id() }};
+
+            if (isLoggedInUserEvent) {
+                $('#booking-id').val(event.id);
+                $('#booking-title').val(event.title.split(' (')[0]);
+                $('#operation-type').val(event.title.split(' (')[1].replace(')', ''));
+                $('#booking-start').val(event.start.toISOString().split('T')[0]);
+
+                let appointmentTime = event.start.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
+
+                // Validate the selected time is within 8 AM - 5 PM
+                const [hour, minute] = appointmentTime.split(':').map(Number);
+                if (hour < 8 || hour >= 17) {
+                    showToast("Appointments can only be scheduled between 08:00 and 17:00.", 'warning');
+                    return;
+                }
+
+                $('#appointment-time').val(appointmentTime);
+                $('#booking-modal').removeClass('hidden');
+                $('#delete-appointment').removeClass('hidden');
+
+                const procedure = event.title.split(' (')[1].replace(')', '');
+                $('#estimated-time').val(procedureTimes[procedure] || 'Select a procedure');
+            }
+        },
+
+        eventContent: function(info) {
+    const isLoggedInUserEvent = info.event.extendedProps.user_id === {{ auth()->id() }};
+    const status = info.event.extendedProps.status; // Get event status
+    
+    // Extract time directly from start date
+    let startDate = info.event.start;
+    let timeFormatted = '00:00';
+    
+    if (startDate) {
+        let hours = startDate.getHours();
+        let minutes = startDate.getMinutes();
+        timeFormatted = (hours < 10 ? '0' : '') + hours + ':' + (minutes < 10 ? '0' : '') + minutes;
+    }
+
+    let userName = "{{ auth()->user()->name }}".substring(0, 0);
+
+    // If status is "accepted", show a small checkmark instead of a dot
+    let icon = status === "accepted"
+        ? `<span style="font-size: 8px;">✔</span>` // Small checkmark
+        : `<span style="color: white; font-size: 18px;">•</span>`; // Default Pending
+
+        return {
+    html: isLoggedInUserEvent
+        ? `${icon}<span class="event-time">${timeFormatted}</span> ${userName}`
+        : `${icon}<span class="event-time">${timeFormatted}</span>`
+};
+
+
+},
+
+
+// Add class to disable "pending" and "accepted" events
+eventClassNames: function(info) {
+    const status = info.event.extendedProps.status;
+    let classes = [];
+
+    if (info.event.extendedProps.user_id !== {{ auth()->id() }}) {
+        classes.push('other-appointment');
+    }
+
+    if (status === "pending" || status === "accepted" || status === "rescheduled") {
+        classes.push('disabled-event'); // Add class to disable event
+    }
+
+    return classes;
+},
+
+// Prevent clicking on "pending" or "accepted" events
+eventClick: function(info) {
+    const status = info.event.extendedProps.status;
+
+    if (status === "pending" || status === "accepted" || status === "rescheduled") {
+        info.jsEvent.preventDefault(); // Prevent default click action
+        return; // Stop further execution
+    }
+
+    // Allow other events to be clicked
+    console.log("Event clicked:", info.event);
+}
+
+    });
+
+    calendar.render();
+
+    $('#operation-type').on('change', function() {
+        const selectedProcedure = $(this).val();
+        $('#estimated-time').val(procedureTimes[selectedProcedure] || 'Select a procedure');
+    });
+
+                // OLD JQUERY SUBMIT HANDLER - COMMENTED OUT
+                // This was causing duplicate submissions without payment fields
+                // The new submit handler (line ~988) with payment fields is being used instead
+                
+                /*
+                $('#booking-form').on('submit', function(event) {
+                event.preventDefault();
+
+                const appointmentId = $('#booking-id').val();
+                const startDate = $('#booking-start').val();
+                const startTime = $('#appointment-time').val();
+                const procedure = $('#operation-type').val();
+                const title = $('#booking-title').val();
+                const startDateTime = startDate + 'T' + startTime + ':00';
+
+                const formData = new FormData();
+                formData.append('id', appointmentId);
+                formData.append('title', title + ' (' + procedure + ')');
+                formData.append('start', startDateTime);
+                formData.append('end', startDateTime);
+                formData.append('procedure', procedure);
+                formData.append('time', startTime);
+                formData.append('user_id', {{ auth()->id() }});
+                formData.append('_token', '{{ csrf_token() }}');
+
+                const imageFile = $('#valid-id')[0].files[0];
+                if (imageFile) {
+                    formData.append('image_path', imageFile);
+                }
+
+                const url = appointmentId ? "{{ route('appointments.update', '') }}/" + appointmentId : "{{ route('appointments.store') }}";
+                const method = appointmentId ? "PUT" : "POST"; // Ensure method is POST for file upload
+
+                $.ajax({
+                    url: url,
+                    type: method,
+                    processData: false,
+                    contentType: false,
+                    data: formData,
+                    success: function(response) {
+                        calendar.refetchEvents();
+
+                        if (!appointmentId) {
+                            calendar.addEvent({
+                                id: response.id,
+                                title: response.title,
+                                start: response.start,
+                                end: response.end,
+                                user_id: response.user_id,
+                                procedure: response.procedure
+                            });
+                        } else {
+                            var updatedEvent = calendar.getEventById(response.id);
+                            if (updatedEvent) {
+                                updatedEvent.setProp('title', response.title);
+                                updatedEvent.setStart(response.start);
+                                updatedEvent.setEnd(response.end);
+                                updatedEvent.setExtendedProp('procedure', response.procedure);
+                            }
+                        }
+
+                        $('#booking-modal').addClass('hidden');
+                        showToast('Appointment successfully updated!', 'success');
+                    },
+                    error: function(xhr) {
+                        const errorMessage = xhr.responseJSON?.message || 'An error occurred.';
+                        showToast('Failed to book appointment: ' + errorMessage, 'error');
+                    }
+                });
+            });
+            */
+
+                $('#delete-appointment').on('click', function() {
+                    const appointmentId = $('#booking-id').val();
+                    if (appointmentId) {
+                        $.ajax({
+                            url: "{{ route('appointments.destroy', '') }}/" + appointmentId,
+                            type: 'DELETE',
+                            data: {
+                                _token: '{{ csrf_token() }}'
+                            },
+                            success: function(response) {
+                                const event = calendar.getEventById(appointmentId);
+                                event.remove();
+                                $('#booking-modal').addClass('hidden');
+                                showToast('Appointment successfully deleted!', 'success');
+                            },
+                            error: function(xhr) {
+                                const errorMessage = xhr.responseJSON?.message || 'An error occurred.';
+                                showToast('Failed to delete appointment: ' + errorMessage, 'error');
+                            }
+                        });
+                    }
+                });
+
+                $('#close-modal').on('click', function() {
+                    $('#booking-modal').addClass('hidden');
+                });
+
+                // Auto-populate estimated time for reschedule mode
+                @if(isset($reschedulingAppointment) && $reschedulingAppointment)
+                    // Get the procedure duration from the backend
+                    @php
+                        $procedure = \App\Models\ProcedurePrice::where('procedure_name', $reschedulingAppointment->procedure)->first();
+                        $duration = $procedure ? $procedure->duration : 0;
+                    @endphp
+                    
+                    // Set the estimated time
+                    $('#estimated-time').val('{{ $duration }} minutes');
+                    
+                    // Show info popup
+                    showToast('Please select a new date and time for your appointment. Your procedure and payment remain the same.', 'info');
+                @endif
+            });
+        </script>
+        
+        <!-- Include Feedback Modal -->
+        <x-feedback-modal />
+
+    @endsection
+</x-app-layout>
