@@ -55,6 +55,11 @@ before production. See [docs/CONFIGURATION.md](docs/CONFIGURATION.md).
 
 ## Documentation
 
+**For the clinic (non-technical):**
+- [docs/CLIENT_GUIDE.md](docs/CLIENT_GUIDE.md) — how the system works & running the clinic
+- [docs/REBRANDING.md](docs/REBRANDING.md) — change clinic name, contact, hours & branding from settings
+
+**For developers:**
 - [docs/INSTALLATION.md](docs/INSTALLATION.md) — local setup (Docker & native)
 - [docs/CONFIGURATION.md](docs/CONFIGURATION.md) — clinic config & integrations
 - [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) — production deployment

@@ -91,7 +91,7 @@ class AdminAppointment extends Controller
             Log::info('About to send decline email', [
                 'appointment_id' => $appointment->id,
                 'user_id' => $appointment->user_id,
-                'user_email' => $appointment->user ? $appointment->user->email : 'USER IS NULL'
+                'has_user' => (bool) $appointment->user
             ]);
 
             try {
@@ -147,7 +147,7 @@ class AdminAppointment extends Controller
             Log::info('About to send acceptance email', [
                 'appointment_id' => $appointment->id,
                 'user_id' => $appointment->user_id,
-                'user_email' => $appointment->user ? $appointment->user->email : 'USER IS NULL'
+                'has_user' => (bool) $appointment->user
             ]);
             
             try {
@@ -380,7 +380,7 @@ Message::create([
         Log::info('About to send decline email from messageFromAdmin', [
             'appointment_id' => $appointment->id,
             'user_id' => $appointment->user_id,
-            'user_email' => $appointment->user ? $appointment->user->email : 'USER IS NULL'
+            'has_user' => (bool) $appointment->user
         ]);
 
         try {
@@ -426,7 +426,7 @@ Message::create([
         Log::info('About to send acceptance email from messageFromAdmin', [
             'appointment_id' => $appointment->id,
             'user_id' => $appointment->user_id,
-            'user_email' => $appointment->user ? $appointment->user->email : 'USER IS NULL'
+            'has_user' => (bool) $appointment->user
         ]);
 
         try {

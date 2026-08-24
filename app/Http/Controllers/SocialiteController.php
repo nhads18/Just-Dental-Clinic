@@ -68,15 +68,16 @@ class SocialiteController extends Controller
                 $user = User::create([
                     'name' => $socialUser->getName() ?? $provider . ' User',
                     'email' => $email,
-                    'usertype' => 'user', // Explicitly set usertype for middleware
-                    'password' => Hash::make(Str::random(16)),
+                    'password' => Hash::make(Str::random(32)),
                     'email_verified_at' => now(),
-                    'bio' => null, // Set bio to blank
-                    'avatar' => 'img/default-dp.jpg', // Use default profile picture
+                    'bio' => null,
+                    'avatar' => 'img/default-dp.jpg',
                     'auth_provider' => $provider,
                     'auth_provider_id' => $socialUser->getId(),
                 ]);
-                Log::info('Created user: ' . $user->id);
+                // usertype is set server-side only (never mass-assignable).
+                $user->usertype = 'user';
+                $user->save();
                 Auth::login($user);
             }
             

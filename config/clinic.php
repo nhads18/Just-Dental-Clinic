@@ -79,6 +79,8 @@ return [
     'appointments' => [
         // Default appointment slot length in minutes.
         'default_duration'      => (int) env('CLINIC_APPT_DURATION', 30),
+        // Spacing between selectable booking times, in minutes.
+        'slot_interval'         => (int) env('CLINIC_APPT_SLOT_INTERVAL', 15),
         // Earliest/latest bookable times (24h HH:MM).
         'day_start'             => env('CLINIC_APPT_DAY_START', '09:00'),
         'day_end'               => env('CLINIC_APPT_DAY_END', '18:00'),

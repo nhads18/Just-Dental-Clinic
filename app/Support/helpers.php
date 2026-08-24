@@ -36,6 +36,35 @@ if (! function_exists('clinic_address')) {
     }
 }
 
+if (! function_exists('clinic_time_slots')) {
+    /**
+     * Generate bookable time slots ("HH:MM") from the clinic's configured
+     * day_start, day_end and slot_interval — so booking hours are driven by
+     * config/env, never hardcoded.
+     */
+    function clinic_time_slots(): array
+    {
+        $start    = (string) config('clinic.appointments.day_start', '09:00');
+        $end      = (string) config('clinic.appointments.day_end', '18:00');
+        $interval = max(5, (int) config('clinic.appointments.slot_interval', 15));
+
+        try {
+            $cursor = \Carbon\Carbon::createFromFormat('H:i', $start);
+            $limit  = \Carbon\Carbon::createFromFormat('H:i', $end);
+        } catch (\Throwable $e) {
+            return [];
+        }
+
+        $slots = [];
+        while ($cursor < $limit) {
+            $slots[] = $cursor->format('H:i');
+            $cursor->addMinutes($interval);
+        }
+
+        return $slots;
+    }
+}
+
 if (! function_exists('peso')) {
     /**
      * Format an amount using the clinic currency symbol (₱ by default).

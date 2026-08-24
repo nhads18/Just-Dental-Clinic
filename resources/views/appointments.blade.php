@@ -690,50 +690,10 @@ window.onclick = function(event) {
                                             <select id="appointment-time" name="time" required
                                                 class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2.5">
                                                 <option value="" disabled selected>Select Time</option>
-        <option value="08:00">08:00 AM</option>
-        <option value="08:15">08:15 AM</option>
-        <option value="08:30">08:30 AM</option>
-        <option value="08:45">08:45 AM</option>
-
-        <option value="09:00">09:00 AM</option>
-        <option value="09:15">09:15 AM</option>
-        <option value="09:30">09:30 AM</option>
-        <option value="09:45">09:45 AM</option>
-
-        <option value="10:00">10:00 AM</option>
-        <option value="10:15">10:15 AM</option>
-        <option value="10:30">10:30 AM</option>
-        <option value="10:45">10:45 AM</option>
-
-        <option value="11:00">11:00 AM</option>
-        <option value="11:15">11:15 AM</option>
-        <option value="11:30">11:30 AM</option>
-        <option value="11:45">11:45 AM</option>
-
-        <option value="12:00">12:00 PM</option>
-        <option value="12:15">12:15 PM</option>
-        <option value="12:30">12:30 PM</option>
-        <option value="12:45">12:45 PM</option>
-
-        <option value="13:00">13:00 PM</option>
-        <option value="13:15">13:15 PM</option>
-        <option value="13:30">13:30 PM</option>
-        <option value="13:45">13:45 PM</option>
-
-        <option value="14:00">14:00 PM</option>
-        <option value="14:15">14:15 PM</option>
-        <option value="14:30">14:30 PM</option>
-        <option value="14:45">14:45 PM</option>
-
-        <option value="15:00">15:00 PM</option>
-        <option value="15:15">15:15 PM</option>
-        <option value="15:30">15:30 PM</option>
-        <option value="15:45">15:45 PM</option>
-
-        <option value="16:00">16:00 PM</option>
-        <option value="16:15">16:15 PM</option>
-        <option value="16:30">16:30 PM</option>
-                                                <option value="16:45">16:45 PM</option>
+                                                {{-- Booking times generated from config/clinic.php (day_start/day_end/slot_interval) --}}
+                                                @foreach(clinic_time_slots() as $slot)
+                                                <option value="{{ $slot }}">{{ \Carbon\Carbon::createFromFormat('H:i', $slot)->format('h:i A') }}</option>
+                                                @endforeach
                                             </select>
                                         </div>
 
@@ -1365,10 +1325,12 @@ window.onclick = function(event) {
 
                 let appointmentTime = event.start.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
 
-                // Validate the selected time is within 8 AM - 5 PM
+                // Validate the selected time is within the clinic's configured hours
+                const bookingStartHour = {{ (int) explode(':', config('clinic.appointments.day_start', '09:00'))[0] }};
+                const bookingEndHour = {{ (int) explode(':', config('clinic.appointments.day_end', '18:00'))[0] }};
                 const [hour, minute] = appointmentTime.split(':').map(Number);
-                if (hour < 8 || hour >= 17) {
-                    showToast("Appointments can only be scheduled between 08:00 and 17:00.", 'warning');
+                if (hour < bookingStartHour || hour >= bookingEndHour) {
+                    showToast("Appointments can only be scheduled between {{ config('clinic.appointments.day_start') }} and {{ config('clinic.appointments.day_end') }}.", 'warning');
                     return;
                 }
 
