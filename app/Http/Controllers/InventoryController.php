@@ -27,12 +27,12 @@ class InventoryController extends Controller
         // Validate the input data
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'price' => 'required|numeric',
+            'price' => 'required|numeric|min:0',
             'expiration_date' => 'nullable|date',
-            'quantity' => 'required|integer|min:0',
-            'low_stock_threshold' => 'required|integer|min:1',
+            'quantity' => 'required|numeric|min:0',
+            'low_stock_threshold' => 'required|numeric|min:1',
             'unit' => 'required|string|max:50',
-            'items_per_unit' => 'nullable|integer|min:1',
+            'items_per_unit' => 'nullable|numeric|min:1',
             'supplier' => 'nullable|string|max:255',
             'expiration_type' => 'required|string|in:expirable,inexpirable',
             'category' => 'required|string|max:255',
@@ -48,6 +48,10 @@ class InventoryController extends Controller
             $validated['items_per_unit'] = 1;
         }
     
+        // Initialize original_items_per_unit and current_box_pieces
+        $validated['original_items_per_unit'] = $validated['items_per_unit'] ?? 1;
+        $validated['current_box_pieces'] = $validated['items_per_unit'] ?? 1;
+    
         // Create and save the new inventory item
         Inventory::create($validated);
     
@@ -55,61 +59,67 @@ class InventoryController extends Controller
     }
     
     
-
     // Update an existing inventory item
     public function update(Request $request, $id)
-{
-    $item = Inventory::find($id);
+    {
+        $item = Inventory::find($id);
 
-    if (!$item) {
-        return redirect()->back()->with('error', 'Item not found');
+        if (!$item) {
+            return redirect()->back()->with('error', 'Item not found');
+        }
+
+        // Validate the input data
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'price' => 'required|numeric|min:0',
+            'quantity' => 'required|numeric|min:0',
+            'low_stock_threshold' => 'required|numeric|min:1',
+            'unit' => 'required|string|max:50',
+            'items_per_unit' => 'nullable|numeric|min:1',
+            'expiration_date' => 'nullable|date',
+            'supplier' => 'nullable|string|max:255',
+            'category' => 'required|string|max:255',
+        ]);
+
+        // For pieces unit type, set items_per_unit to 1
+        if ($request->input('unit') === 'pieces') {
+            $validated['items_per_unit'] = 1;
+        }
+
+        // Update the item
+        $item->name = $validated['name'];
+        $item->price = $validated['price'];
+        $item->quantity = $validated['quantity'];
+        $item->low_stock_threshold = $validated['low_stock_threshold'];
+        $item->unit = $validated['unit'];
+        $item->items_per_unit = $validated['items_per_unit'];
+        $item->expiration_date = $validated['expiration_date'];
+        $item->supplier = $validated['supplier'];
+        $item->category = $validated['category'];
+        
+        // Update original_items_per_unit if items_per_unit changed
+        $item->original_items_per_unit = $validated['items_per_unit'] ?? 1;
+        // Only reset current_box_pieces if it exceeds the new items_per_unit
+        if ($item->current_box_pieces > ($validated['items_per_unit'] ?? 1)) {
+            $item->current_box_pieces = $validated['items_per_unit'] ?? 1;
+        }
+
+        $item->save();
+
+        return redirect()->route('admin.inventory_admin')->with('success', 'Item updated successfully');
     }
-
-    // Validate the input data
-    $validated = $request->validate([
-        'name' => 'required|string|max:255',
-        'price' => 'required|numeric',
-        'quantity' => 'required|integer',
-        'low_stock_threshold' => 'required|integer|min:1',
-        'unit' => 'required|string|max:50',
-        'items_per_unit' => 'nullable|integer|min:1',
-        'expiration_date' => 'nullable|date',
-        'supplier' => 'nullable|string|max:255',
-        'category' => 'required|string|max:255',
-    ]);
-
-    // For pieces unit type, set items_per_unit to 1
-    if ($request->input('unit') === 'pieces') {
-        $validated['items_per_unit'] = 1;
-    }
-
-    // Update the item
-    $item->name = $validated['name'];
-    $item->price = $validated['price'];
-    $item->quantity = $validated['quantity'];
-    $item->low_stock_threshold = $validated['low_stock_threshold'];
-    $item->unit = $validated['unit'];
-    $item->items_per_unit = $validated['items_per_unit'];
-    $item->expiration_date = $validated['expiration_date'];
-    $item->supplier = $validated['supplier'];
-    $item->category = $validated['category'];
-
-    $item->save();
-
-    return redirect()->route('admin.inventory_admin')->with('success', 'Item updated successfully');
-}
 
     
-    // In your InventoryController.php
-public function destroy($id)
-{
-    $item = Inventory::find($id);
-    if ($item) {
-        $item->delete();
-        return redirect()->route('admin.inventory_admin')->with('success', 'Item deleted successfully');
-    }
+    // Delete an inventory item
+    public function destroy($id)
+    {
+        $item = Inventory::find($id);
+        if ($item) {
+            $item->delete();
+            return redirect()->route('admin.inventory_admin')->with('success', 'Item deleted successfully');
+        }
 
-    return redirect()->route('admin.inventory_admin')->with('error', 'Item not found');
-}
+        return redirect()->route('admin.inventory_admin')->with('error', 'Item not found');
+    }
 
 }

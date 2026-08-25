@@ -19,8 +19,8 @@ class Inventory extends Model
     // Mutator for expiration date based on expiration type
     public function setExpirationDateAttribute($value)
     {
-        if ($this->expiration_type === 'Inexpirable') {
-            $this->attributes['expiration_date'] = null; // Set to null if Inexpirable
+        if ($this->expiration_type === 'inexpirable') {
+            $this->attributes['expiration_date'] = null; // Set to null if inexpirable
         } else {
             $this->attributes['expiration_date'] = $value;
         }
