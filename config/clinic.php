@@ -2,7 +2,7 @@
 
 /*
 |--------------------------------------------------------------------------
-| Clinic Configuration — Just Dental Clinic
+| Clinic Configuration — Prime Smiles Dental Clinic
 |--------------------------------------------------------------------------
 |
 | Single source of truth for clinic-specific identity and business rules.
@@ -10,7 +10,7 @@
 | them from here via config('clinic.*'), or the clinic() helper.
 |
 | Values marked "TODO: supplied by clinic" are placeholders. Replace them
-| with the real Just Dental Clinic information (or set the matching env var)
+| with the real Prime Smiles Dental Clinic information (or set the matching env var)
 | before going to production. Never commit real secrets here.
 |
 */
@@ -18,10 +18,10 @@
 return [
 
     // ----- Identity -----------------------------------------------------
-    'name'        => env('CLINIC_NAME', 'Just Dental Clinic'),
-    'short_name'  => env('CLINIC_SHORT_NAME', 'Just Dental'),
-    'legal_name'  => env('CLINIC_LEGAL_NAME', 'Just Dental Clinic'),
-    'tagline'     => env('CLINIC_TAGLINE', 'Modern, caring dentistry for the whole family.'),
+    'name'        => env('CLINIC_NAME', 'Prime Smiles Dental Clinic'),
+    'short_name'  => env('CLINIC_SHORT_NAME', 'Prime Smiles'),
+    'legal_name'  => env('CLINIC_LEGAL_NAME', 'Prime Smiles Dental Clinic Inc.'),
+    'tagline'     => env('CLINIC_TAGLINE', 'Your smile, our passion.'),
 
     // Asset paths (relative to /public). Replace with real brand assets.
     'logo'        => env('CLINIC_LOGO', 'img/logo.svg'),
@@ -30,12 +30,12 @@ return [
 
     // ----- AI assistant -------------------------------------------------
     'assistant'   => [
-        'name' => env('CLINIC_ASSISTANT_NAME', 'Aether AI'),
+        'name' => env('CLINIC_ASSISTANT_NAME', 'Prime AI'),
     ],
 
     // ----- Contact & location ------------------------------------------
     // TODO: supplied by clinic
-    'email'       => env('CLINIC_EMAIL', 'info@justdental.example'),
+    'email'       => env('CLINIC_EMAIL', 'info@primesmiles.example'),
     'phone'       => env('CLINIC_PHONE', '+63 000 000 0000'),
     'address'     => [
         'line1'   => env('CLINIC_ADDRESS_LINE1', 'TODO: supplied by clinic'),
@@ -49,7 +49,7 @@ return [
     'map_embed_url' => env('CLINIC_MAP_EMBED_URL', ''),
 
     // ----- Web & social -------------------------------------------------
-    'website'     => env('CLINIC_WEBSITE', 'https://justdental.example'),
+    'website'     => env('CLINIC_WEBSITE', 'https://primesmiles.example'),
     'social'      => [
         'facebook'  => env('CLINIC_FACEBOOK', ''),
         'instagram' => env('CLINIC_INSTAGRAM', ''),
@@ -107,9 +107,9 @@ return [
 
     // ----- SEO / metadata ----------------------------------------------
     'seo' => [
-        'title'       => env('CLINIC_SEO_TITLE', 'Just Dental Clinic'),
-        'description' => env('CLINIC_SEO_DESCRIPTION', 'Just Dental Clinic — modern, caring dentistry. Book your appointment online.'),
-        'keywords'    => env('CLINIC_SEO_KEYWORDS', 'dental clinic, dentist, teeth cleaning, braces, appointments'),
+        'title'       => env('CLINIC_SEO_TITLE', 'Prime Smiles Dental Clinic'),
+        'description' => env('CLINIC_SEO_DESCRIPTION', 'Prime Smiles Dental Clinic — gentle, modern dental care. Book your appointment online.'),
+        'keywords'    => env('CLINIC_SEO_KEYWORDS', 'dental clinic, dentist, teeth cleaning, Prime Smiles'),
         'og_image'    => env('CLINIC_SEO_OG_IMAGE', 'img/logo.svg'),
     ],
 

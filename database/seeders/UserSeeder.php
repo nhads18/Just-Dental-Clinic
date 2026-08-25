@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 class UserSeeder extends Seeder
 {
     /**
-     * Seed demo accounts for Just Dental Clinic.
+     * Seed demo accounts for Prime Smiles Dental Clinic.
      *
      * These are clearly-labelled DEMO accounts for local/testing use only.
      * Do NOT ship these credentials to production — create real accounts and
@@ -19,7 +19,7 @@ class UserSeeder extends Seeder
     {
         // Demo administrator
         DB::table('users')->updateOrInsert(
-            ['email' => 'admin@justdental.example'],
+            ['email' => 'admin@primesmiles.example'],
             [
                 'name' => 'Demo Admin',
                 'email_verified_at' => now(),
@@ -34,9 +34,9 @@ class UserSeeder extends Seeder
 
         // Demo patients — obviously fictional records (see spec: no fake real PII)
         $demoPatients = [
-            ['name' => 'Juan Demo',   'email' => 'juan.demo@justdental.example'],
-            ['name' => 'Maria Sample','email' => 'maria.sample@justdental.example'],
-            ['name' => 'Test Patient','email' => 'test.patient@justdental.example'],
+            ['name' => 'Juan Demo',   'email' => 'juan.demo@primesmiles.example'],
+            ['name' => 'Maria Sample','email' => 'maria.sample@primesmiles.example'],
+            ['name' => 'Test Patient','email' => 'test.patient@primesmiles.example'],
         ];
 
         foreach ($demoPatients as $p) {

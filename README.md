@@ -1,6 +1,6 @@
-# Just Dental Clinic — Management System
+# Prime Smiles Dental Clinic — Management System
 
-A Laravel 11 clinic management system for **Just Dental Clinic**: online appointment
+A Laravel 11 clinic management system for **Prime Smiles Dental Clinic**: online appointment
 booking, patient & dental records, an interactive tooth chart, inventory, PayMongo
 payments, invoices, notifications, real‑time messaging, reviews, and an optional AI
 dental assistant.
@@ -40,8 +40,8 @@ The Docker `.env` should point at the service hostnames: `DB_HOST=mysql`,
 
 | Role  | Email                        | Password   |
 |-------|------------------------------|------------|
-| Admin | admin@justdental.example     | `password` |
-| Patient | juan.demo@justdental.example | `password` |
+| Admin | admin@primesmiles.example     | `password` |
+| Patient | juan.demo@primesmiles.example | `password` |
 
 Demo patients (`Juan Demo`, `Maria Sample`, `Test Patient`) are clearly fictional.
 No fabricated medical records are seeded.

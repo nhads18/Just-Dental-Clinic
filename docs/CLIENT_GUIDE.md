@@ -1,4 +1,4 @@
-# Just Dental Clinic — Client Guide
+# Prime Smiles Dental Clinic — Client Guide
 
 A plain-English guide to your clinic management system: what it does, how patients use
 it, and how you run the clinic day to day. No technical knowledge needed.

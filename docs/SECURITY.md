@@ -43,7 +43,7 @@
   12 is a separate, test-backed migration and would not clear the not-yet-fixed
   advisories today.
 
-## Fixes applied during the Just Dental transformation
+## Fixes applied during the Prime Smiles transformation
 
 - **Removed exposed public scripts** that bypassed the framework:
   `public/clear-cache.php`, `test-images.php`, `check-image.php`,

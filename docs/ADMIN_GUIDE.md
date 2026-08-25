@@ -1,6 +1,6 @@
 # Admin Guide
 
-This guide covers day‑to‑day administration of the Just Dental Clinic system.
+This guide covers day‑to‑day administration of the Prime Smiles Dental Clinic system.
 
 ## Signing in
 

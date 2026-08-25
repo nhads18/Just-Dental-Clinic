@@ -34,7 +34,7 @@ Appointment rules (`clinic.appointments.*`) and payment toggles
 ## Branding assets
 
 - **Logo:** `public/img/logo.svg` is a placeholder wordmark — replace with the real
-  Just Dental Clinic logo (or point `CLINIC_LOGO` elsewhere).
+  Prime Smiles Dental Clinic logo (or point `CLINIC_LOGO` elsewhere).
 - **Favicon:** `public/favicon.ico`.
 - **About/clinic photo:** `public/img/doc.jpg` is a leftover placeholder — replace it.
 
