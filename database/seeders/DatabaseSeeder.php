@@ -21,7 +21,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // The seeders below fabricate patient medical records, appointments and
-        // public reviews. They are intentionally DISABLED for Just Dental Clinic:
+        // public reviews. They are intentionally DISABLED for Prime Smiles Dental Clinic:
         // fabricated medical records must never be mistaken for real patient data,
         // and testimonials must be genuine. Enable only for isolated local testing.
         //

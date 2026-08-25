@@ -1,26 +1,26 @@
-/.phpunit.cache
-/node_modules
-# /public/build
-/public/hot
-/public/storage
-/storage/*.key
-/vendor
+```
+# Environment
 .env
-.env.backup
-.env.production
-.env-sample
-.phpactor.json
-.phpunit.result.cache
-Homestead.json
-Homestead.yaml
-auth.json
-npm-debug.log
-yarn-error.log
-/.fleet
-/.idea
-/.vscode
-/.zed
+.env.local
+.env.*
 
+# Dependencies
+vendor/
 
-# Internal migration audit (kept local, not published)
-docs/JUSTDENTAL_MIGRATION_AUDIT.md
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# PHP specific
+*.php~
+**/vendor/**/.DS_Store
+.svn/
+
+# Laravel specific
+bootstrap/cache/
+storage/
+public/storage
+```

@@ -22,12 +22,13 @@ class User extends Authenticatable implements MustVerifyEmail
         'name',
         'email',
         'password',
-        'usertype', // Added usertype
-        'email_verified_at', // Added for OAuth
-        'auth_provider', // Added auth_provider
-        'auth_provider_id', // Added auth_provider_id
-        'bio', // Added bio
-        'avatar', // Added avatar
+        // NOTE: 'usertype' is intentionally NOT mass-assignable to prevent
+        // privilege escalation. Set it explicitly (e.g. $user->usertype = ...).
+        'email_verified_at',
+        'auth_provider',
+        'auth_provider_id',
+        'bio',
+        'avatar',
     ];
 
     /**

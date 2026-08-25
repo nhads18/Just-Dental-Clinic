@@ -1,72 +1,202 @@
-# Just Dental Clinic — Management System
+# Just Dental Clinic - Production Ready Application
 
-A Laravel 11 clinic management system for **Just Dental Clinic**: online appointment
-booking, patient & dental records, an interactive tooth chart, inventory, PayMongo
-payments, invoices, notifications, real‑time messaging, reviews, and an optional AI
-dental assistant.
+A comprehensive dental clinic management system built with Laravel 11, PHP 8.2, MySQL 8, MongoDB 7, and Redis 7.
 
-> White‑label: all clinic‑specific identity (name, contact, hours, branding, SEO,
-> appointment/payment rules) lives in **`config/clinic.php`** and is driven by
-> environment variables — nothing clinic‑specific is hardcoded in views or controllers.
+## Features
 
-## Tech stack
+- **Patient Management**: Complete patient records, appointment scheduling, and dental history
+- **Inventory Management**: Advanced tracking with box/piece units, expiration dates, and low-stock alerts
+- **Appointment System**: Real-time booking, rescheduling, cancellations, and status tracking
+- **Admin Dashboard**: Comprehensive analytics, user management, and system oversight
+- **Dental Records**: Tooth-by-tooth charting with images and notes
+- **Messaging System**: Real-time patient-admin communication via MongoDB
+- **AI Assistant**: Lee AI chatbot for patient inquiries
+- **Authentication**: Email verification, Google OAuth, and secure password handling
+- **Activity Logging**: Complete audit trail for all system actions
 
-- **Backend:** Laravel 11 · PHP 8.2
-- **Database:** MySQL 8 (primary) · MongoDB (chat messages) · Redis (optional cache/queue)
-- **Frontend:** Blade · Vite · TailwindCSS · Alpine.js · Chart.js/ApexCharts
-- **Integrations:** PayMongo (payments) · Pusher (real‑time) · Laravel Socialite (Google/Facebook OAuth) · Groq (AI assistant) · reCAPTCHA
+## Docker Setup (Recommended)
 
-## Quick start (Docker — recommended)
+### Prerequisites
+- Docker & Docker Compose installed
+- Git installed
 
-The repo ships a Docker stack (PHP + MySQL + MongoDB + Redis) so no local PHP is needed.
+### Quick Start
 
 ```bash
-docker compose up -d --build
-docker compose exec app composer install
+# 1. Clone the repository
+cd /workspace
+
+# 2. Create environment file
 cp .env.example .env
+
+# 3. Start all services
+docker compose up -d --build
+
+# 4. Install PHP dependencies
+docker compose exec app composer install
+
+# 5. Generate application key
 docker compose exec app php artisan key:generate
+
+# 6. Run database migrations
 docker compose exec app php artisan migrate --seed
-docker compose exec app php artisan storage:link
-npm install && npm run build            # Node runs on the host
-docker compose exec app php artisan serve --host=0.0.0.0 --port=8000
+
+# 7. (Optional) Fix any legacy database issues
+docker compose exec app php fix-ratings-db.php
+
+# 8. Access the application
+# Open http://localhost:8000 in your browser
 ```
 
-Then open **http://localhost:8000**.
+### Services
 
-The Docker `.env` should point at the service hostnames: `DB_HOST=mysql`,
-`MONGO_DSN=mongodb://mongo:27017`, `REDIS_HOST=redis`. See [docs/INSTALLATION.md](docs/INSTALLATION.md).
+| Service | Port | Description |
+|---------|------|-------------|
+| App (PHP 8.2) | 8000 | Laravel application |
+| MySQL 8 | 3306 | Primary database |
+| MongoDB 7 | 27017 | Message storage |
+| Redis 7 | 6379 | Sessions & cache |
 
-### Demo accounts (local only — never ship to production)
+### Common Commands
 
-| Role  | Email                        | Password   |
-|-------|------------------------------|------------|
-| Admin | admin@justdental.example     | `password` |
-| Patient | juan.demo@justdental.example | `password` |
+```bash
+# View logs
+docker compose logs -f app
 
-Demo patients (`Juan Demo`, `Maria Sample`, `Test Patient`) are clearly fictional.
-No fabricated medical records are seeded.
+# Run artisan commands
+docker compose exec app php artisan <command>
 
-## Configuration
+# Run composer commands
+docker compose exec app composer <command>
 
-Clinic identity, contact details, operating hours, currency, and appointment/payment
-rules are configured in **[`config/clinic.php`](config/clinic.php)** via `CLINIC_*`
-environment variables. Values marked `TODO: supplied by clinic` must be filled in
-before production. See [docs/CONFIGURATION.md](docs/CONFIGURATION.md).
+# Restart services
+docker compose restart
 
-## Documentation
+# Stop all services
+docker compose down
 
-- [docs/INSTALLATION.md](docs/INSTALLATION.md) — local setup (Docker & native)
-- [docs/CONFIGURATION.md](docs/CONFIGURATION.md) — clinic config & integrations
-- [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) — production deployment
-- [docs/SECURITY.md](docs/SECURITY.md) — security model & hardening checklist
-- [docs/ADMIN_GUIDE.md](docs/ADMIN_GUIDE.md) — day‑to‑day admin usage
+# Rebuild containers
+docker compose build --no-cache
+```
+
+## Environment Configuration
+
+Edit `.env` file with your settings:
+
+```env
+APP_NAME="Just Dental Clinic"
+APP_URL=http://localhost:8000
+
+# Database
+DB_HOST=mysql
+DB_DATABASE=justdental
+DB_USERNAME=justdental
+DB_PASSWORD=secret
+
+# MongoDB
+MONGO_DSN=mongodb://mongo:27017
+MONGO_DATABASE=justdental_messages
+
+# Redis
+REDIS_HOST=redis
+REDIS_PORT=6379
+```
+
+## Inventory Management
+
+The system uses an advanced inventory tracking model:
+
+- **quantity**: Number of full/unopened boxes
+- **items_per_unit**: How many individual pieces in one unit (e.g., 100 masks per box)
+- **original_items_per_unit**: Constant reference value (never changes)
+- **current_box_pieces**: Pieces remaining in the currently open box
+
+### Unit Types Supported
+- Pieces
+- Boxes
+- Packs
+- Bottles
+- Sets
+- Rolls
+- Pairs
+- Tubes
+
+### Expiration Tracking
+- **Expirable**: Requires expiration date
+- **Inexpirable**: No expiration date needed (e.g., equipment)
+
+## Security Considerations
+
+1. **Production Environment**:
+   - Set `APP_DEBUG=false`
+   - Set `SESSION_SECURE_COOKIE=true`
+   - Enable HTTPS and update `APP_URL`
+   - Change all default passwords
+
+2. **User Roles**:
+   - Admin users have `usertype='admin'`
+   - Regular patients have `usertype='patient'`
+   - User type cannot be mass-assigned (security measure)
+
+3. **Data Protection**:
+   - Passwords are hashed using bcrypt
+   - CSRF protection enabled on all forms
+   - SQL injection prevention via Eloquent ORM
+
+## Troubleshooting
+
+### Common Issues
+
+**Database Connection Error:**
+```bash
+docker compose restart mysql
+docker compose exec app php artisan config:clear
+```
+
+**Permission Issues:**
+```bash
+docker compose exec app chmod -R 775 storage bootstrap/cache
+```
+
+**Migration Errors:**
+```bash
+docker compose exec app php artisan migrate:fresh --seed
+```
+
+**Cache Issues:**
+```bash
+docker compose exec app php artisan cache:clear
+docker compose exec app php artisan config:clear
+docker compose exec app php artisan view:clear
+```
 
 ## Testing
 
 ```bash
+# Run all tests
 docker compose exec app php artisan test
+
+# Run specific test suite
+docker compose exec app php artisan test --testsuite=Feature
 ```
+
+## Deployment Checklist
+
+- [ ] Set `APP_ENV=production`
+- [ ] Set `APP_DEBUG=false`
+- [ ] Generate production `APP_KEY`
+- [ ] Configure HTTPS/SSL
+- [ ] Update database credentials
+- [ ] Configure backup strategy
+- [ ] Set up monitoring/logging
+- [ ] Review security headers
+- [ ] Test all critical features
+- [ ] Document custom configurations
 
 ## License
 
-Released under the [MIT License](LICENSE).
+Proprietary - All rights reserved.
+
+## Support
+
+For technical support, contact the development team.

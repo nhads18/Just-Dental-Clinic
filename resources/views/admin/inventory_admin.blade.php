@@ -601,7 +601,7 @@
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="form-group">
+                            <div class="form-group" id="items_per_unit_group">
                                 <label for="items_per_unit">Items per Unit:</label>
                                 <input type="number" id="items_per_unit" name="items_per_unit" class="form-control" placeholder="e.g., 10 masks per box" min="1" value="1" required>
                                 <small style="color: #9ca3af; font-size: 12px;">How many individual items in one unit</small>
@@ -709,7 +709,7 @@
                             <option value="tubes">Tubes</option>
                         </select>
                     </div>
-                    <div class="form-group mb-3">
+                    <div class="form-group mb-3" id="update_items_per_unit_group">
                         <label for="update_items_per_unit" class="form-label">Items per Unit:</label>
                         <input type="number" id="update_items_per_unit" name="items_per_unit" class="form-control" min="1" value="1" required>
                         <small style="color: #9ca3af; font-size: 12px; display: block; margin-top: 4px;">

@@ -66,10 +66,12 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'usertype' => 'user', // Set default usertype
-            'bio' => null, // Set bio to blank
-            'avatar' => 'img/default-dp.jpg', // Set default avatar
+            'bio' => null,
+            'avatar' => 'img/default-dp.jpg',
         ]);
+        // usertype is set server-side only (never mass-assignable).
+        $user->usertype = 'user';
+        $user->save();
 
         Log::info('User created', ['user_id' => $user->id]);
 

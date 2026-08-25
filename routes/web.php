@@ -105,8 +105,6 @@
         Route::get('/admin/details', [UserController::class, 'getAdminDetails']);
         Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
         Route::post('/messages', [MessageController::class, 'store'])->name('messages.store');
-          // In your routes/web.php
-    Route::get('/admin/upcoming_appointments', [AdminController::class, 'showUpcomingAppointments']);
     Route::post('/appointments/{id}/action/{action}', [AppointmentController::class, 'handleAction'])->name('appointment.handleAction');
     
     // Patient Dental Records

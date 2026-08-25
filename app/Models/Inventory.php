@@ -10,7 +10,7 @@ class Inventory extends Model
     use HasFactory;
 
     // Adding 'category', 'unit', 'items_per_unit', and 'low_stock_threshold' to the fillable array
-    protected $fillable = ['name', 'price', 'expiration_date', 'quantity', 'low_stock_threshold', 'unit', 'items_per_unit', 'supplier', 'expiration_type', 'category'];
+    protected $fillable = ['name', 'price', 'expiration_date', 'quantity', 'low_stock_threshold', 'unit', 'items_per_unit', 'supplier', 'expiration_type', 'category', 'original_items_per_unit', 'current_box_pieces'];
 
     protected $casts = [
         'expiration_date' => 'datetime',
@@ -19,8 +19,8 @@ class Inventory extends Model
     // Mutator for expiration date based on expiration type
     public function setExpirationDateAttribute($value)
     {
-        if ($this->expiration_type === 'Inexpirable') {
-            $this->attributes['expiration_date'] = null; // Set to null if Inexpirable
+        if ($this->expiration_type === 'inexpirable') {
+            $this->attributes['expiration_date'] = null; // Set to null if inexpirable
         } else {
             $this->attributes['expiration_date'] = $value;
         }

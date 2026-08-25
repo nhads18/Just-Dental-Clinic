@@ -11,21 +11,28 @@ class Appointment extends Model
 {
     // use HasFactory;
 
-    // protected $table = 'appointments'; // Use the actual table name
-
-    // protected $fillable = [
-    //     'user_id',
-    //     'title',
-    //     'procedure',
-    //     'duration',
-    //     'time',
-    //     'start',
-    //     'end',
-    //     'status',
-    //     'image_path',
-    // ];
-
-    protected $guarded = [];
+    // Explicit allow-list (no $guarded = []) to prevent mass assignment of
+    // columns like id/timestamps or unexpected fields.
+    protected $fillable = [
+        'user_id',
+        'title',
+        'procedure',
+        'duration',
+        'time',
+        'start',
+        'end',
+        'status',
+        'image_path',
+        'teeth_layout',
+        'total_price',
+        'down_payment',
+        'payment_method',
+        'payment_reference',
+        'payment_status',
+        'requires_payment',
+        'reminder_sent_at',
+        'reviewed_at',
+    ];
     
     // Relationship to User
     public function user()

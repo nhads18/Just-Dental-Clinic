@@ -300,19 +300,6 @@ class   AdminController extends Controller
     }
 
 
-    public function bookAppointment($request)
-{
-    // Validate and create a new appointment
-    $appointment = Appointment::create($request->all());
-
-    // Flash a success message (optional)
-    session()->flash('success', 'Appointment booked successfully!');
-
-    // Redirect to the upcoming appointments page to refresh the view
-    return redirect()->route('admin.upcoming_appointments');
-}
-
-
 public function checkNotifications()
 {
     // Count appointments that are new (e.g., added in the last few minutes)

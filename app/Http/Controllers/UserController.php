@@ -112,9 +112,9 @@ public function getAdminDetails()
         return response()->json(['error' => 'Admin not found'], 404);
     }
 
+    // Only expose the clinic display name — never the admin's email/PII.
     return response()->json([
-        'name' => $admin->name,
-        'email' => $admin->email
+        'name' => config('clinic.name'),
     ]);
 }
 }
