@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Just Dental Clinic'),
+    'name' => env('APP_NAME', 'Prime Smiles Dental Clinic'),
 
     /*
     |--------------------------------------------------------------------------

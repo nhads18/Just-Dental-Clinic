@@ -1,26 +1,55 @@
-/.phpunit.cache
-/node_modules
-# /public/build
-/public/hot
-/public/storage
-/storage/*.key
-/vendor
+```
+# Compiled and build artifacts
+*.pyc
+__pycache__/
+*.o
+*.obj
+*.class
+*.exe
+*.dll
+*.so
+*.a
+*.out
+
+# Dependencies
+vendor/
+node_modules/
 .env
-.env.backup
-.env.production
-.env-sample
-.phpactor.json
+.env.local
+.env.*
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+*.swo
+
+# Editors
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Coverage
+.coverage
+coverage/
+htmlcov/
+
+# Distribution / packaging
+dist/
+build/
+*.tar.gz
+*.zip
+*.tar
+*.gz
+
+# Testing
 .phpunit.result.cache
-Homestead.json
-Homestead.yaml
-auth.json
-npm-debug.log
-yarn-error.log
-/.fleet
-/.idea
-/.vscode
-/.zed
+.phpunit.cache/
 
-
-# Internal migration audit (kept local, not published)
-docs/JUSTDENTAL_MIGRATION_AUDIT.md
+# Laravel specific (if applicable)
+bootstrap/cache/
+storage/
+```
